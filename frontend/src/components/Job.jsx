@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from './ui/button'
 import { Bookmark } from 'lucide-react'
-import { Avatar, AvatarImage } from './ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
 import { Badge } from './ui/badge'
 import { useNavigate } from 'react-router-dom'
 
@@ -27,16 +27,17 @@ const Job = ({job}) => {
                 <Button className="p-6" variant="outline" size="icon">
                     <Avatar>
                         <AvatarImage src={job?.company?.logo} />
+                        <AvatarFallback>{job?.company?.name?.charAt(0)?.toUpperCase() || "C"}</AvatarFallback>
                     </Avatar>
                 </Button>
                 <div>
-                    <h1 className='font-medium text-lg'>{job?.company?.name}</h1>
+                    <h1 className='font-medium text-lg text-gray-900'>{job?.company?.name}</h1>
                     <p className='text-sm text-gray-500'>India</p>
                 </div>
             </div>
 
             <div>
-                <h1 className='font-bold text-lg my-2'>{job?.title}</h1>
+                <h1 className='font-bold text-lg my-2 text-gray-900'>{job?.title}</h1>
                 <p className='text-sm text-gray-600'>{job?.description}</p>
             </div>
             <div className='flex items-center gap-2 mt-4'>

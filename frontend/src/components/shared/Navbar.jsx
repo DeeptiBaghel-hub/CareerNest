@@ -1,7 +1,7 @@
 import React from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Button } from '../ui/button'
-import { Avatar, AvatarImage } from '../ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
 import { LogOut, Moon, Sun, User2 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Link, useNavigate } from 'react-router-dom'
@@ -66,15 +66,15 @@ const Navbar = () => {
                             </div>
                         ) : (
                             <Popover>
-                                <PopoverTrigger asChild>
-                                    <Avatar className="cursor-pointer">
-                                        <AvatarImage src={user?.profile?.profilePhoto} alt="Profile" />
-                                    </Avatar>
+                                <PopoverTrigger nativeButton={false} render={<Avatar className="cursor-pointer" />}>
+                                    <AvatarImage src={user?.profile?.profilePhoto} alt="Profile" />
+                                    <AvatarFallback>{user?.fullname ? user.fullname.charAt(0).toUpperCase() : <User2 className="size-4" />}</AvatarFallback>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-80">
                                     <div className='flex gap-2'>
                                         <Avatar>
                                             <AvatarImage src={user?.profile?.profilePhoto} alt="Profile" />
+                                            <AvatarFallback>{user?.fullname ? user.fullname.charAt(0).toUpperCase() : <User2 className="size-4" />}</AvatarFallback>
                                         </Avatar>
                                         <div>
                                             <h4 className='font-medium'>{user?.fullname}</h4>

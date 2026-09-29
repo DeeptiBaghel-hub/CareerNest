@@ -3,8 +3,10 @@ import Navbar from './shared/Navbar'
 import FilterCard from './FilterCard'
 import Job from './Job';
 import { useSelector } from 'react-redux';
+import useGetAllJobs from '@/hooks/useGetAllJobs';
 
 const Jobs = () => {
+    useGetAllJobs(); // this page never fetched jobs itself — it only worked if Home/Browse had already populated redux first
     const { allJobs, searchedQuery } = useSelector(store => store.job);
     const [filterJobs, setFilterJobs] = useState(allJobs);
 

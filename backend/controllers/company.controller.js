@@ -51,12 +51,10 @@ export const getCompany = async (req, res) => {
     try {
         const userId = req.id; // logged in user id
         const companies = await Company.find({ userId });
-        if (!companies || companies.length === 0) {
-            return res.status(404).json({
-                message: "Companies not found.",
-                success: false
-            });
-        }
+        // An empty list is a normal, valid result for a recruiter who hasn't
+        // registered a company yet — it's not an error. Returning 404 here
+        // made the frontend's fetch throw, so on any transient failure the
+        // UI silently kept showing stale/no data instead of the real list.
         return res.status(200).json({
             companies,
             success: true

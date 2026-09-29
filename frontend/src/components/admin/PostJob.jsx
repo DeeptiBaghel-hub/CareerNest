@@ -10,10 +10,10 @@ import { JOB_API_END_POINT } from '@/utils/constant'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
-
-const companyArray = [];
+import useGetAllCompanies from '@/hooks/useGetAllCompanies'
 
 const PostJob = () => {
+    useGetAllCompanies(); // page relied on Companies.jsx having already fetched this into redux — broke if a recruiter linked here directly
     const [input, setInput] = useState({
         title: "",
         description: "",
@@ -34,8 +34,11 @@ const PostJob = () => {
     };
 
     const selectChangeHandler = (value) => {
-        const selectedCompany = companies.find((company)=> company.name.toLowerCase() === value);
-        setInput({...input, companyId:selectedCompany._id});
+        // Matching by lowercased company name breaks if two companies ever
+        // collide on name-case (Mongo's unique index is case-sensitive), and
+        // it silently no-ops if no match is found. Matching by _id (the
+        // actual value we need anyway) avoids both problems.
+        setInput({...input, companyId: value});
     };
 
     const submitHandler = async (e) => {
@@ -53,7 +56,7 @@ const PostJob = () => {
                 navigate("/admin/jobs");
             }
         } catch (error) {
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Something went wrong while posting the job.");
         } finally{
             setLoading(false);
         }
@@ -62,7 +65,7 @@ const PostJob = () => {
     return (
         <div>
             <Navbar />
-            <div className='flex items-center justify-center w-screen my-5'>
+            <div className='flex items-center justify-center w-full my-5'>
                 <form onSubmit = {submitHandler} className='p-8 max-w-4xl border border-gray-200 shadow-lg rounded-md'>
                     <div className='grid grid-cols-2 gap-2'>
                         <div>
@@ -160,7 +163,7 @@ const PostJob = () => {
                                             {
                                                 companies.map((company) => {
                                                     return (
-                                                        <SelectItem value={company?.name?.toLowerCase()}>{company.name}</SelectItem>
+                                                        <SelectItem key={company._id} value={company._id}>{company.name}</SelectItem>
                                                     )
                                                 })
                                             }

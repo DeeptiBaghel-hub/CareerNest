@@ -58,19 +58,23 @@ const CompanySetup = () => {
             }
         } catch (error) {
             console.log(error);
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Something went wrong while updating the company.");
         } finally {
             setLoading(false);
         }
     }
 
     useEffect(() => {
+        // singleCompany starts out as null until useGetCompanyById's request
+        // resolves, and this effect also runs on that first render — so
+        // reading singleCompany.name directly used to throw immediately
+        // every time this page loaded (edit from the companies list).
         setInput({
-            name: singleCompany.name || "",
-            description: singleCompany.description || "",
-            website: singleCompany.website || "",
-            location: singleCompany.location || "",
-            file: singleCompany.file || null
+            name: singleCompany?.name || "",
+            description: singleCompany?.description || "",
+            website: singleCompany?.website || "",
+            location: singleCompany?.location || "",
+            file: singleCompany?.file || null
         })
     },[singleCompany]);
 

@@ -24,10 +24,12 @@ export const register = async (req, res) => {
         }
 
         // Profile photo is optional on the signup form, so only touch
-        // Cloudinary when a file was actually uploaded.
+        // Cloudinary when a file was actually uploaded. The /register route
+        // uses multer's .single("file") middleware, which puts the file on
+        // req.file (singular) — NOT req.files. Reading req.files here meant
+        // this was always undefined and the photo never uploaded.
         let profilePhotoUrl = "";
-        const file = req.files?.file?.[0];
-        const profilePhoto = req.files?.profilePhoto?.[0];
+        const file = req.file;
         if (file) {
             const fileUri = getDataUri(file);
             const cloudResponse = await cloudinary.uploader.upload(fileUri.content);

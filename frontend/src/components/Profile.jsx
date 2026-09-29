@@ -11,12 +11,12 @@ import { useSelector } from 'react-redux'
 import useGetAppliedJobs from '@/hooks/useGetAppliedJobs'
 
 // const skills = ["Html", "Css", "Javascript", "Reactjs"]
-const isResume = true;
 
 const Profile = () => {
     const [open, setOpen] = useState(false);
     const {user} = useSelector(store=>store.auth);
     const isStudent = user?.role === "student";
+    const isResume = Boolean(user?.profile?.resume); // was hardcoded `true` — always rendered a broken link even with no resume uploaded
     useGetAppliedJobs(isStudent);
 
     return (
