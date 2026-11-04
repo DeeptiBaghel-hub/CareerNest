@@ -8,6 +8,7 @@ import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant';
 import { setSingleJob } from '@/redux/jobSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
+import { BriefcaseBusiness, CalendarDays, MapPin, Users } from 'lucide-react';
 
 const JobDescription = () => {
     const { singleJob } = useSelector(store => store.job);
@@ -51,36 +52,30 @@ const JobDescription = () => {
     }, [jobId, dispatch, user?._id]);
 
     return (
-        <div>
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
-            <div className='max-w-7xl mx-auto my-10'>
-                <div className='flex items-center justify-between'>
-                    <div>
-                        <h1 className='font-bold text-xl'>{singleJob?.title}</h1>
-                        <div className='flex items-center gap-2 mt-4'>
-                            <Badge className={'text-blue-700 font-bold'} variant="ghost">{singleJob?.position} Positions</Badge>
-                            <Badge className={'text-[#d97706] font-bold'} variant="ghost">{singleJob?.jobType}</Badge>
-                            <Badge className={'text-[#4f46e5] font-bold'} variant="ghost">₹{singleJob?.salary} LPA</Badge>
+            <main className="mx-auto max-w-5xl px-5 py-8 sm:py-12">
+                <div className="mb-6 text-sm text-muted-foreground"><a href="/jobs" className="hover:text-primary">Jobs</a><span className="px-2">/</span><span>{singleJob?.company?.name || "Job details"}</span></div>
+                <section className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-10">
+                    <div className="flex flex-col gap-6 border-b border-border pb-7 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex gap-4">
+                            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-xl font-bold text-primary">{singleJob?.company?.name?.charAt(0)?.toUpperCase() || "C"}</div>
+                            <div><p className="font-medium text-muted-foreground">{singleJob?.company?.name}</p><h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">{singleJob?.title || "Loading job…"}</h1><div className="mt-3 flex flex-wrap gap-2"><Badge variant="secondary">{singleJob?.jobType}</Badge><Badge variant="secondary">{singleJob?.experienceLevel} years experience</Badge><Badge variant="secondary">{singleJob?.position} positions</Badge></div></div>
                         </div>
+                        <Button onClick={isApplied ? undefined : applyJobHandler} disabled={isApplied || !singleJob} className="h-11 rounded-xl px-6">{isApplied ? 'Already Applied' : 'Apply Now'}</Button>
                     </div>
-                    <Button
-                        onClick={isApplied ? null : applyJobHandler}
-                        disabled={isApplied}
-                        className={`rounded-lg ${isApplied ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#0d9488] hover:bg-[#0f766e]'}`}>
-                        {isApplied ? 'Already Applied' : 'Apply Now'}
-                    </Button>
-                </div>
-                <h1 className='border-b-2 border-b-gray-300 font-medium py-4'>Job Description</h1>
-                <div className='my-4'>
-                    <h1 className='font-bold my-1'>Role: <span className='pl-4 font-normal text-foreground'>{singleJob?.title}</span></h1>
-                    <h1 className='font-bold my-1'>Location: <span className='pl-4 font-normal text-foreground'>{singleJob?.location}</span></h1>
-                    <h1 className='font-bold my-1'>Description: <span className='pl-4 font-normal text-foreground'>{singleJob?.description}</span></h1>
-                    <h1 className='font-bold my-1'>Experience: <span className='pl-4 font-normal text-foreground'>{singleJob?.experienceLevel} yrs</span></h1>
-                    <h1 className='font-bold my-1'>Salary: <span className='pl-4 font-normal text-foreground'>₹{singleJob?.salary} LPA</span></h1>
-                    <h1 className='font-bold my-1'>Total Applicants: <span className='pl-4 font-normal text-foreground'>{singleJob?.applications?.length}</span></h1>
-                    <h1 className='font-bold my-1'>Posted Date: <span className='pl-4 font-normal text-foreground'>{singleJob?.createdAt?.split("T")[0]}</span></h1>
-                </div>
-            </div>
+                    <div className="grid gap-4 py-6 sm:grid-cols-3">
+                        <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><MapPin className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Location</p><p className="font-medium">{singleJob?.location || "Not specified"}</p></div></div>
+                        <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><BriefcaseBusiness className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Salary</p><p className="font-medium">₹{singleJob?.salary}{!String(singleJob?.salary || "").includes("LPA") && " LPA"}</p></div></div>
+                        <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><Users className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Applicants</p><p className="font-medium">{singleJob?.applications?.length ?? 0} applicants</p></div></div>
+                    </div>
+                    <div className="space-y-6 border-t border-border pt-7">
+                        <div><h2 className="text-lg font-semibold">About the role</h2><p className="mt-3 whitespace-pre-line leading-7 text-muted-foreground">{singleJob?.description}</p></div>
+                        {singleJob?.requirements?.length > 0 && <div><h2 className="text-lg font-semibold">What you’ll need</h2><ul className="mt-3 grid gap-2 text-muted-foreground sm:grid-cols-2">{singleJob.requirements.map((requirement, index) => <li key={`${requirement}-${index}`} className="flex gap-2"><span className="text-primary">•</span>{requirement}</li>)}</ul></div>}
+                        <p className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarDays className="size-4" />Posted {singleJob?.createdAt ? new Date(singleJob.createdAt).toLocaleDateString() : "—"}</p>
+                    </div>
+                </section>
+            </main>
         </div>
     )
 }

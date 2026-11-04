@@ -10,7 +10,7 @@ import { USER_API_END_POINT } from '@/utils/constant'
 import { toast } from 'sonner'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLoading, setUser } from '@/redux/authSlice'
-import { Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
 const Login = () => {
     const [input, setInput] = useState({
@@ -18,6 +18,7 @@ const Login = () => {
         password: "",
         role: "",
     });
+    const [showPassword, setShowPassword] = useState(false);
     const { loading,user } = useSelector(store => store.auth);
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -72,13 +73,12 @@ const Login = () => {
 
                     <div className='my-2'>
                         <Label>Password</Label>
-                        <Input
-                            type="password"
-                            value={input.password}
-                            name="password"
-                            onChange={changeEventHandler}
-                            placeholder=""
-                        />
+                        <div className="relative">
+                            <Input type={showPassword ? "text" : "password"} value={input.password} name="password" onChange={changeEventHandler} className="pr-11" autoComplete="current-password" />
+                            <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground">
+                                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </button>
+                        </div>
                     </div>
                     <div className='flex items-center justify-between'>
                         <RadioGroup className="flex items-center gap-4 my-5">
