@@ -2,7 +2,7 @@ import React from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Button } from '../ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
-import { LogOut, Moon, Sun, User2 } from 'lucide-react'
+import { BookmarkCheck, LogOut, Moon, Sun, User2 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -56,6 +56,7 @@ const Navbar = () => {
                                     <li><Link to="/">Home</Link></li>
                                     <li><Link to="/jobs">Jobs</Link></li>
                                     <li><Link to="/browse">Browse</Link></li>
+                                    {user && <li><Link to="/saved" className="inline-flex items-center gap-1.5"><BookmarkCheck className="size-4" />Saved</Link></li>}
                                 </>
                             )}
                         </ul>
