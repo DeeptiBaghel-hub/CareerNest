@@ -1,4 +1,6 @@
 import { Job } from "../models/job.model.js";
+import { Company } from "../models/company.model.js";
+import { User } from "../models/user.model.js";
 
 // admin post krega job
 export const postJob = async (req, res) => {
@@ -6,12 +8,21 @@ export const postJob = async (req, res) => {
         const { title, description, requirements, salary, location, jobType, experience, position, companyId } = req.body;
         const userId = req.id;
 
+        const user = await User.findById(userId).select("role");
+        if (!user || user.role !== "recruiter") {
+            return res.status(403).json({ message: "Recruiter access required.", success: false });
+        }
+
         if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId) {
             return res.status(400).json({
                 message: "Somethin is missing.",
                 success: false
             })
         };
+        const company = await Company.findOne({ _id: companyId, userId });
+        if (!company) {
+            return res.status(403).json({ message: "You can only post jobs for your own company.", success: false });
+        }
         const job = await Job.create({
             title,
             description,
