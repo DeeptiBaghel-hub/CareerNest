@@ -103,7 +103,7 @@ export const updateCompany = async (req, res) => {
             updateData.logo = cloudResponse.secure_url;
         }
 
-        const company = await Company.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        const company = await Company.findOneAndUpdate({ _id: req.params.id, userId: req.id }, updateData, { new: true, runValidators: true });
         if (!company) {
             return res.status(404).json({
                 message: "Company not found.",
