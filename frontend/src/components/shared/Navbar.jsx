@@ -82,7 +82,7 @@ const Navbar = () => {
                                             <p className='text-sm text-muted-foreground'>{user?.profile?.bio}</p>
                                         </div>
                                     </div>
-                                    <div className='flex flex-col my-2 text-gray-600'>
+                                    <div className='flex flex-col my-2 text-muted-foreground'>
                                         <div className='flex items-center gap-2'>
                                             <User2 />
                                             <Button variant="link"><Link to="/profile">View Profile</Link></Button>

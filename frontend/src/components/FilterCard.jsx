@@ -29,21 +29,21 @@ const FilterCard = () => {
         dispatch(setSearchedQuery(selectedValue));
     }, [selectedValue]);
     return (
-        <div className='w-full bg-white p-3 rounded-md'>
-            <h1 className='font-bold text-lg text-gray-900'>Filter Jobs</h1>
+        <div className='w-full bg-card text-card-foreground border border-border p-3 rounded-md'>
+            <h1 className='font-bold text-lg'>Filter Jobs</h1>
             <hr className='mt-3' />
             <RadioGroup value={selectedValue} onValueChange={changeHandler}>
                 {
                     fitlerData.map((data, index) => (
                         <div key={index}>
-                            <h1 className='font-bold text-lg text-gray-900'>{data.fitlerType}</h1>
+                            <h1 className='font-bold text-lg'>{data.fitlerType}</h1>
                             {
                                 data.array.map((item, idx) => {
                                     const itemId = `id${index}-${idx}`
                                     return (
                                         <div className='flex items-center space-x-2 my-2' key={itemId}>
                                             <RadioGroupItem value={item} id={itemId} />
-                                            <Label htmlFor={itemId} className='text-gray-700'>{item}</Label>
+                                            <Label htmlFor={itemId}>{item}</Label>
                                         </div>
                                     )
                                 })
