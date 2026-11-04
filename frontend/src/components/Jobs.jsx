@@ -26,15 +26,15 @@ const Jobs = () => {
     return (
         <div>
             <Navbar />
-            <div className='max-w-7xl mx-auto mt-5'>
-                <div className='flex gap-5'>
-                    <div className='w-20%'>
+            <main className='mx-auto mt-8 max-w-7xl px-5'>
+                <div className='flex flex-col gap-6 lg:flex-row'>
+                    <aside className='w-full shrink-0 lg:w-64'>
                         <FilterCard />
-                    </div>
+                    </aside>
                     {
-                        filterJobs.length <= 0 ? <span>Job not found</span> : (
-                            <div className='flex-1 h-[88vh] overflow-y-auto pb-5'>
-                                <div className='grid grid-cols-3 gap-4'>
+                        filterJobs.length <= 0 ? <div className="flex min-h-64 flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-8 text-center"><h2 className="text-xl font-semibold">No matching jobs</h2><p className="mt-2 text-sm text-muted-foreground">Try another keyword or clear your filters.</p></div> : (
+                            <div className='min-w-0 flex-1 pb-8'>
+                                <div className='grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3'>
                                     {
                                         filterJobs.map((job) => (
                                             <div key={job?._id}>
@@ -47,7 +47,7 @@ const Jobs = () => {
                         )
                     }
                 </div>
-            </div>
+            </main>
         </div>
     )
 }

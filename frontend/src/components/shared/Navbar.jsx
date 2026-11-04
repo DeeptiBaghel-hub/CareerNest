@@ -32,8 +32,8 @@ const Navbar = () => {
     }
 
     return (
-        <div className='bg-background text-foreground border-b'>
-            <div className='flex items-center justify-between mx-auto max-w-7xl h-16'>
+        <div className='sticky top-0 z-40 border-b border-border bg-background/90 text-foreground backdrop-blur-xl'>
+            <div className='mx-auto flex h-16 max-w-7xl items-center justify-between px-5'>
                 <h1 className='text-2xl font-bold'>Career<span className='text-[#0d9488]'>Nest</span></h1>
                 <div className='flex items-center gap-4'>
                     <Button
