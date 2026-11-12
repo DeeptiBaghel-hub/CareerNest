@@ -64,14 +64,17 @@ const JobDescription = () => {
                         </div>
                         <Button onClick={isApplied ? undefined : applyJobHandler} disabled={isApplied || !singleJob} className="h-11 rounded-xl px-6">{isApplied ? 'Already Applied' : 'Apply Now'}</Button>
                     </div>
-                    <div className="grid gap-4 py-6 sm:grid-cols-3">
+                    <div className="grid gap-4 py-6 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><MapPin className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Location</p><p className="font-medium">{singleJob?.location || "Not specified"}</p></div></div>
                         <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><BriefcaseBusiness className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Salary</p><p className="font-medium">₹{singleJob?.salary}{!String(singleJob?.salary || "").includes("LPA") && " LPA"}</p></div></div>
                         <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><Users className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Applicants</p><p className="font-medium">{singleJob?.applications?.length ?? 0} applicants</p></div></div>
+                        {singleJob?.workMode && <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><BriefcaseBusiness className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Work mode</p><p className="font-medium">{singleJob.workMode}</p></div></div>}
                     </div>
                     <div className="space-y-6 border-t border-border pt-7">
                         <div><h2 className="text-lg font-semibold">About the role</h2><p className="mt-3 whitespace-pre-line leading-7 text-muted-foreground">{singleJob?.description}</p></div>
                         {singleJob?.requirements?.length > 0 && <div><h2 className="text-lg font-semibold">What you’ll need</h2><ul className="mt-3 grid gap-2 text-muted-foreground sm:grid-cols-2">{singleJob.requirements.map((requirement, index) => <li key={`${requirement}-${index}`} className="flex gap-2"><span className="text-primary">•</span>{requirement}</li>)}</ul></div>}
+                        {singleJob?.benefits?.length > 0 && <div><h2 className="text-lg font-semibold">Benefits</h2><ul className="mt-3 grid gap-2 text-muted-foreground sm:grid-cols-2">{singleJob.benefits.map((benefit, index) => <li key={`${benefit}-${index}`} className="flex gap-2"><span className="text-primary">•</span>{benefit}</li>)}</ul></div>}
+                        {singleJob?.applicationDeadline && <p className="flex items-center gap-2 text-sm font-medium"><CalendarDays className="size-4 text-primary" />Apply by {new Date(singleJob.applicationDeadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>}
                         <p className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarDays className="size-4" />Posted {singleJob?.createdAt ? new Date(singleJob.createdAt).toLocaleDateString() : "—"}</p>
                     </div>
                 </section>
