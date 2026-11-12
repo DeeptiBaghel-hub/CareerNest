@@ -65,23 +65,20 @@ const ApplicantsTable = () => {
                                 <TableCell>{item?.applicant?.createdAt?.split("T")[0]}</TableCell>
                                 <TableCell className="capitalize">{item?.status || "pending"}</TableCell>
                                 <TableCell className="float-right cursor-pointer">
-                                    <Popover>
+                                    {item?.status !== "withdrawn" && <Popover>
                                         <PopoverTrigger>
                                             <MoreHorizontal />
                                         </PopoverTrigger>
                                         <PopoverContent className="w-32">
                                             {
-                                                shortlistingStatus.map((status, index) => {
-                                                    return (
-                                                        <div onClick={() => statusHandler(status, item?._id)} key={index} className='flex w-fit items-center my-2 cursor-pointer'>
-                                                            <span>{status}</span>
-                                                        </div>
-                                                    )
-                                                })
+                                                shortlistingStatus.map((status, index) => (
+                                                    <button type="button" onClick={() => statusHandler(status, item?._id)} key={index} className='flex items-center my-2'>
+                                                        <span>{status}</span>
+                                                    </button>
+                                                ))
                                             }
                                         </PopoverContent>
-                                    </Popover>
-
+                                    </Popover>}
                                 </TableCell>
 
                             </tr>

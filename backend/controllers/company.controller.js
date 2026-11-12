@@ -1,4 +1,7 @@
+import mongoose from "mongoose";
 import { Company } from "../models/company.model.js";
+import { Job } from "../models/job.model.js";
+import { User } from "../models/user.model.js";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 
@@ -140,5 +143,35 @@ export const updateCompany = async (req, res) => {
             message: "Something went wrong while updating the company.",
             success: false
         });
+    }
+};
+
+export const deleteCompany = async (req, res) => {
+    try {
+        const user = await User.findById(req.id).select("role");
+        if (!user || user.role !== "recruiter") {
+            return res.status(403).json({ message: "Recruiter access required.", success: false });
+        }
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: "Please provide a valid company id.", success: false });
+        }
+
+        const company = await Company.findOne({ _id: req.params.id, userId: req.id });
+        if (!company) {
+            return res.status(404).json({ message: "Company not found.", success: false });
+        }
+        const hasJobs = await Job.exists({ company: company._id });
+        if (hasJobs) {
+            return res.status(409).json({
+                message: "This company has linked jobs, including archived jobs. Its application history is retained, so the company cannot be deleted.",
+                success: false
+            });
+        }
+
+        await company.deleteOne();
+        return res.status(200).json({ message: "Company deleted.", companyId: company._id, success: true });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Something went wrong while deleting the company.", success: false });
     }
 };
