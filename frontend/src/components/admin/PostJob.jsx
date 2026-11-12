@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Navbar from '../shared/Navbar'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import axios from 'axios'
 import { JOB_API_END_POINT } from '@/utils/constant'
 import { toast } from 'sonner'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import useGetAllCompanies from '@/hooks/useGetAllCompanies'
 
@@ -23,10 +23,15 @@ const PostJob = () => {
         jobType: "",
         experience: "",
         position: 0,
-        companyId: ""
+        companyId: "",
+        workMode: "",
+        benefits: "",
+        applicationDeadline: ""
     });
     const [loading, setLoading]= useState(false);
+    const [jobLoading, setJobLoading] = useState(false);
     const navigate = useNavigate();
+    const { id: jobId } = useParams();
 
     const { companies } = useSelector(store => store.company);
     const changeEventHandler = (e) => {
@@ -41,16 +46,60 @@ const PostJob = () => {
         setInput({...input, companyId: value});
     };
 
+    useEffect(() => {
+        if (!jobId) return;
+
+        const loadJob = async () => {
+            try {
+                setJobLoading(true);
+                const res = await axios.get(`${JOB_API_END_POINT}/getAdminJobs`, { withCredentials: true });
+                const job = res.data.jobs?.find((item) => item._id === jobId);
+                if (!res.data.success || !job) {
+                    toast.error(res.data.message || "Job not found.");
+                    navigate("/admin/jobs");
+                    return;
+                }
+
+                setInput({
+                    title: job.title || "",
+                    description: job.description || "",
+                    requirements: job.requirements?.join(", ") || "",
+                    salary: job.salary || "",
+                    location: job.location || "",
+                    jobType: job.jobType || "",
+                    experience: job.experienceLevel || "",
+                    position: job.position || 0,
+                    companyId: job.company?._id || "",
+                    workMode: job.workMode || "",
+                    benefits: job.benefits?.join(", ") || "",
+                    applicationDeadline: job.applicationDeadline
+                        ? new Date(job.applicationDeadline).toISOString().slice(0, 10)
+                        : ""
+                });
+            } catch (error) {
+                toast.error(error.response?.data?.message || "Unable to load this job.");
+                navigate("/admin/jobs");
+            } finally {
+                setJobLoading(false);
+            }
+        };
+
+        loadJob();
+    }, [jobId, navigate]);
+
     const submitHandler = async (e) => {
         e.preventDefault();
         try {
             setLoading(true);
-            const res = await axios.post(`${JOB_API_END_POINT}/post`, input,{
+            const request = jobId
+                ? axios.put(`${JOB_API_END_POINT}/${jobId}`, input, { withCredentials: true })
+                : axios.post(`${JOB_API_END_POINT}/post`, input, {
                 headers:{
                     'Content-Type':'application/json'
                 },
                 withCredentials:true
             });
+            const res = await request;
             if(res.data.success){
                 toast.success(res.data.message);
                 navigate("/admin/jobs");
@@ -80,12 +129,12 @@ const PostJob = () => {
                         </div>
                         <div>
                             <Label>Description</Label>
-                            <Input
-                                type="text"
+                            <textarea
                                 name="description"
                                 value={input.description}
                                 onChange={changeEventHandler}
-                                className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
+                                rows={5}
+                                className="my-1 w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                             />
                         </div>
                         <div>
@@ -152,9 +201,41 @@ const PostJob = () => {
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
+                        <div>
+                            <Label>Work Mode</Label>
+                            <Input
+                                type="text"
+                                name="workMode"
+                                placeholder="e.g. Hybrid"
+                                value={input.workMode}
+                                onChange={changeEventHandler}
+                                className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
+                            />
+                        </div>
+                        <div>
+                            <Label>Application Deadline</Label>
+                            <Input
+                                type="date"
+                                name="applicationDeadline"
+                                value={input.applicationDeadline}
+                                onChange={changeEventHandler}
+                                className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
+                            />
+                        </div>
+                        <div className="col-span-2">
+                            <Label>Benefits</Label>
+                            <textarea
+                                name="benefits"
+                                placeholder="Separate benefits with commas"
+                                value={input.benefits}
+                                onChange={changeEventHandler}
+                                rows={2}
+                                className="my-1 w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                            />
+                        </div>
                         {
                             companies.length > 0 && (
-                                <Select onValueChange={selectChangeHandler}>
+                                <Select value={input.companyId || undefined} onValueChange={selectChangeHandler}>
                                     <SelectTrigger className="w-[180px]">
                                         <SelectValue placeholder="Select a Company" />
                                     </SelectTrigger>
@@ -175,7 +256,7 @@ const PostJob = () => {
                         }
                     </div> 
                     {
-                        loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Post New Job</Button>
+                        loading || jobLoading ? <Button className="w-full my-4" disabled> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">{jobId ? "Update Job" : "Post New Job"}</Button>
                     }
                     {
                         companies.length === 0 && <p className='text-xs text-red-600 font-bold text-center my-3'>*Please register a company before posting a job.</p>
