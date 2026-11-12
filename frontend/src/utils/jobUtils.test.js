@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatSalary, getMinimumAnnualSalary, matchesJobSearch, matchesWorkLocation } from './jobUtils.js';
+import { formatSalary, getMinimumAnnualSalary, matchesJobSearch, matchesWorkMode } from './jobUtils.js';
 
 describe('job display and filter helpers', () => {
     it('matches job searches across title, location, and company', () => {
@@ -10,15 +10,18 @@ describe('job display and filter helpers', () => {
         assert.equal(matchesJobSearch(job, 'designer'), false);
     });
 
-    it('matches the selected work mode instead of searching job descriptions', () => {
-        assert.equal(matchesWorkLocation({ workMode: 'Hybrid', description: 'Remote collaboration' }, 'hybrid'), true);
-        assert.equal(matchesWorkLocation({ workMode: 'Hybrid', description: 'Remote collaboration' }, 'remote'), false);
-        assert.equal(matchesWorkLocation({ workMode: 'Remote' }, 'remote'), true);
+    it('matches the selected work mode exactly instead of searching descriptions or overlapping modes', () => {
+        assert.equal(matchesWorkMode({ workMode: 'Hybrid', description: 'Remote collaboration' }, 'hybrid'), true);
+        assert.equal(matchesWorkMode({ workMode: 'Hybrid', description: 'Remote collaboration' }, 'remote'), false);
+        assert.equal(matchesWorkMode({ workMode: 'Remote' }, 'remote'), true);
+        assert.equal(matchesWorkMode({ workMode: 'Temporarily remote' }, 'remote'), false);
+        assert.equal(matchesWorkMode({ workMode: 'Temporarily remote' }, 'temporarily remote'), true);
+        assert.equal(matchesWorkMode({ workMode: 'On-site' }, 'on-site'), true);
     });
 
     it('uses location fields for older jobs without a work mode', () => {
-        assert.equal(matchesWorkLocation({ location: 'Temporarily Remote' }, 'temporarily remote'), true);
-        assert.equal(matchesWorkLocation({ location: 'Mumbai', description: 'Remote collaboration' }, 'remote'), false);
+        assert.equal(matchesWorkMode({ location: 'Temporarily Remote' }, 'temporarily remote'), true);
+        assert.equal(matchesWorkMode({ location: 'Mumbai', description: 'Remote collaboration' }, 'remote'), false);
     });
 
     it('formats salary values without repeating the currency or pay unit', () => {

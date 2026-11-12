@@ -7,7 +7,7 @@ import useGetAllJobs from '@/hooks/useGetAllJobs';
 import FilterCard, { defaultJobFilters } from './FilterCard';
 import { Search } from 'lucide-react';
 import { Button } from './ui/button';
-import { getMinimumAnnualSalary, matchesJobSearch, matchesWorkLocation } from '@/utils/jobUtils';
+import { getMinimumAnnualSalary, matchesJobSearch, matchesWorkMode } from '@/utils/jobUtils';
 
 // const randomJobs = [1, 2,45];
 
@@ -28,7 +28,7 @@ const Browse = () => {
             if (getMinimumAnnualSalary(job.salary) < Number(filters.salary)) return false;
         }
         if (filters.jobType !== 'any' && !String(job.jobType || '').toLowerCase().includes(filters.jobType)) return false;
-        if (!matchesWorkLocation(job, filters.remote)) return false;
+        if (!matchesWorkMode(job, filters.workMode)) return false;
         if (filters.experience !== 'any') {
             const years = Number(String(job.experienceLevel || '').match(/\d+(?:\.\d+)?/)?.[0] || 0);
             if (years < Number(filters.experience)) return false;

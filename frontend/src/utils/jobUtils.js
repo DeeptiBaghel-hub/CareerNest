@@ -8,19 +8,24 @@ export const matchesJobSearch = (job, query) => {
         .includes(searchTerm);
 };
 
-export const matchesWorkLocation = (job, filter) => {
-    const selectedLocation = normalize(filter);
-    if (!selectedLocation || selectedLocation === 'any') return true;
+const matchesModeValue = (value, selectedMode) => {
+    const mode = normalize(value);
+    const aliases = {
+        'on-site': ['on-site', 'onsite', 'in-office', 'office'],
+        remote: ['remote', 'work from home', 'wfh'],
+    };
+
+    return (aliases[selectedMode] || [selectedMode]).includes(mode);
+};
+
+export const matchesWorkMode = (job, filter) => {
+    const selectedMode = normalize(filter);
+    if (!selectedMode || selectedMode === 'any') return true;
 
     const workMode = normalize(job?.workMode);
-    if (workMode) {
-        if (selectedLocation === 'remote') {
-            return workMode.includes('remote') || workMode.includes('work from home') || workMode === 'wfh';
-        }
-        return workMode.includes(selectedLocation);
-    }
+    if (workMode) return matchesModeValue(workMode, selectedMode);
 
-    return normalize(`${job?.jobType || ''} ${job?.location || ''}`).includes(selectedLocation);
+    return [job?.jobType, job?.location].some(value => matchesModeValue(value, selectedMode));
 };
 
 export const getMinimumAnnualSalary = (value) => {

@@ -5,7 +5,7 @@ import Job from './Job';
 import { useSelector } from 'react-redux';
 import useGetAllJobs from '@/hooks/useGetAllJobs';
 import { defaultJobFilters } from './FilterCard';
-import { getMinimumAnnualSalary, matchesJobSearch, matchesWorkLocation } from '@/utils/jobUtils';
+import { getMinimumAnnualSalary, matchesJobSearch, matchesWorkMode } from '@/utils/jobUtils';
 
 const Jobs = () => {
     useGetAllJobs(); // this page never fetched jobs itself — it only worked if Home/Browse had already populated redux first
@@ -22,7 +22,7 @@ const Jobs = () => {
             if (getMinimumAnnualSalary(job.salary) < Number(filters.salary)) return false;
         }
         if (filters.jobType !== 'any' && !String(job.jobType || '').toLowerCase().includes(filters.jobType)) return false;
-        if (!matchesWorkLocation(job, filters.remote)) return false;
+        if (!matchesWorkMode(job, filters.workMode)) return false;
         if (filters.experience !== 'any' && Number(String(job.experienceLevel || '').match(/\d+(?:\.\d+)?/)?.[0] || 0) < Number(filters.experience)) return false;
         return true;
     }), [allJobs, searchedQuery, filters]);

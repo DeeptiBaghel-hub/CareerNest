@@ -1,14 +1,14 @@
 import React from 'react'
 import { SlidersHorizontal } from 'lucide-react'
 
-export const defaultJobFilters = { posted: 'any', salary: 'any', experience: 'any', jobType: 'any', remote: 'any' }
+export const defaultJobFilters = { posted: 'any', salary: 'any', experience: 'any', jobType: 'any', workMode: 'any' }
 
 const filterGroups = [
     { key: 'posted', title: 'Date posted', options: [['any', 'All days'], ['today', 'Today'], ['3', 'Last 3 days'], ['7', 'Last 7 days']] },
     { key: 'salary', title: 'Minimum salary', options: [['any', 'Any salary'], ['200000', '₹2,00,000+'], ['300000', '₹3,00,000+'], ['500000', '₹5,00,000+'], ['700000', '₹7,00,000+'], ['900000', '₹9,00,000+'], ['1300000', '₹13,00,000+']] },
     { key: 'experience', title: 'Work experience', options: [['any', 'Any experience'], ['0', 'No experience'], ['1', '1+ year'], ['3', '3+ years'], ['5', '5+ years']] },
     { key: 'jobType', title: 'Job type', options: [['any', 'Any type'], ['full-time', 'Full-time'], ['part-time', 'Part-time']] },
-    { key: 'remote', title: 'Work location', options: [['any', 'Any location'], ['remote', 'Remote'], ['hybrid', 'Hybrid'], ['temporarily remote', 'Temporarily remote']] },
+    { key: 'workMode', title: 'Work mode', options: [['any', 'Any mode'], ['on-site', 'On-site'], ['remote', 'Remote'], ['hybrid', 'Hybrid'], ['temporarily remote', 'Temporarily remote']] },
 ]
 
 const FilterCard = ({ filters = defaultJobFilters, onChange = () => {} }) => (
