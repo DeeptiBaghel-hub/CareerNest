@@ -19,6 +19,11 @@ const CompanySetup = () => {
         description: "",
         website: "",
         location: "",
+        industry: "",
+        companySize: "",
+        founded: "",
+        companyType: "",
+        specializations: "",
         file: null
     });
     const {singleCompany} = useSelector(store=>store.company);
@@ -41,6 +46,11 @@ const CompanySetup = () => {
         formData.append("description", input.description);
         formData.append("website", input.website);
         formData.append("location", input.location);
+        formData.append("industry", input.industry);
+        formData.append("companySize", input.companySize);
+        formData.append("founded", input.founded);
+        formData.append("companyType", input.companyType);
+        formData.append("specializations", input.specializations);
         if (input.file) {
             formData.append("file", input.file);
         }
@@ -74,6 +84,11 @@ const CompanySetup = () => {
             description: singleCompany?.description || "",
             website: singleCompany?.website || "",
             location: singleCompany?.location || "",
+            industry: singleCompany?.industry || "",
+            companySize: singleCompany?.companySize || "",
+            founded: singleCompany?.founded ? String(singleCompany.founded) : "",
+            companyType: singleCompany?.companyType || "",
+            specializations: singleCompany?.specializations?.join(", ") || "",
             file: singleCompany?.file || null
         })
     },[singleCompany]);
@@ -90,7 +105,7 @@ const CompanySetup = () => {
                         </Button>
                         <h1 className='font-bold text-xl'>Company Setup</h1>
                     </div>
-                    <div className='grid grid-cols-2 gap-4'>
+                    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
                         <div>
                             <Label>Company Name</Label>
                             <Input
@@ -100,13 +115,14 @@ const CompanySetup = () => {
                                 onChange={changeEventHandler}
                             />
                         </div>
-                        <div>
+                        <div className="sm:col-span-2">
                             <Label>Description</Label>
-                            <Input
-                                type="text"
+                            <textarea
                                 name="description"
                                 value={input.description}
                                 onChange={changeEventHandler}
+                                rows={4}
+                                className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                             />
                         </div>
                         <div>
@@ -125,6 +141,56 @@ const CompanySetup = () => {
                                 name="location"
                                 value={input.location}
                                 onChange={changeEventHandler}
+                            />
+                        </div>
+                        <div>
+                            <Label>Industry</Label>
+                            <Input
+                                type="text"
+                                name="industry"
+                                value={input.industry}
+                                onChange={changeEventHandler}
+                            />
+                        </div>
+                        <div>
+                            <Label>Company Size</Label>
+                            <Input
+                                type="text"
+                                name="companySize"
+                                placeholder="e.g. 10,000+ Employees"
+                                value={input.companySize}
+                                onChange={changeEventHandler}
+                            />
+                        </div>
+                        <div>
+                            <Label>Founded</Label>
+                            <Input
+                                type="number"
+                                name="founded"
+                                min="1"
+                                value={input.founded}
+                                onChange={changeEventHandler}
+                            />
+                        </div>
+                        <div>
+                            <Label>Company Type</Label>
+                            <Input
+                                type="text"
+                                name="companyType"
+                                placeholder="e.g. Public Company"
+                                value={input.companyType}
+                                onChange={changeEventHandler}
+                            />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <Label>Specializations</Label>
+                            <textarea
+                                name="specializations"
+                                placeholder="Separate specializations with commas"
+                                value={input.specializations}
+                                onChange={changeEventHandler}
+                                rows={3}
+                                className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                             />
                         </div>
                         <div>

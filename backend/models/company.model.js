@@ -17,6 +17,29 @@ const companySchema=new mongoose.Schema({
         type:String
         
     },
+    industry:{
+        type:String,
+        trim:true,
+        default:""
+    },
+    companySize:{
+        type:String,
+        trim:true,
+        default:""
+    },
+    founded:{
+        type:Number,
+        min:1
+    },
+    companyType:{
+        type:String,
+        trim:true,
+        default:""
+    },
+    specializations:{
+        type:[String],
+        default:[]
+    },
     logo:{
         type:String //url to company logo
     },

@@ -7,6 +7,7 @@ import useGetAllJobs from '@/hooks/useGetAllJobs';
 import FilterCard, { defaultJobFilters } from './FilterCard';
 import { Search } from 'lucide-react';
 import { Button } from './ui/button';
+import { getMinimumAnnualSalary, matchesJobSearch, matchesWorkLocation } from '@/utils/jobUtils';
 
 // const randomJobs = [1, 2,45];
 
@@ -18,25 +19,22 @@ const Browse = () => {
     const [query, setQuery] = useState(searchedQuery);
     const popularQueries = ['Frontend Developer', 'Backend Developer', 'Data Science', 'Product Manager', 'Customer Support', 'Work From Home'];
     const filteredJobs = useMemo(() => allJobs.filter(job => {
+        if (!matchesJobSearch(job, searchedQuery)) return false;
         if (filters.posted !== 'any') {
             const age = (Date.now() - new Date(job.createdAt).getTime()) / 86400000;
             if (!Number.isFinite(age) || (filters.posted === 'today' ? age >= 1 : age > Number(filters.posted))) return false;
         }
         if (filters.salary !== 'any') {
-            const raw = String(job.salary || '').replace(/,/g, '');
-            const values = raw.match(/\d+(?:\.\d+)?/g)?.map(Number) || [];
-            const salary = values.length ? Math.max(...values) * (/lpa/i.test(raw) ? 100000 : 1) : 0;
-            if (salary < Number(filters.salary)) return false;
+            if (getMinimumAnnualSalary(job.salary) < Number(filters.salary)) return false;
         }
-        if (filters.payPeriod !== 'any' && filters.payPeriod !== 'yearly') return false;
         if (filters.jobType !== 'any' && !String(job.jobType || '').toLowerCase().includes(filters.jobType)) return false;
-        if (filters.remote !== 'any' && !`${job.jobType || ''} ${job.location || ''} ${job.description || ''}`.toLowerCase().includes(filters.remote)) return false;
+        if (!matchesWorkLocation(job, filters.remote)) return false;
         if (filters.experience !== 'any') {
             const years = Number(String(job.experienceLevel || '').match(/\d+(?:\.\d+)?/)?.[0] || 0);
             if (years < Number(filters.experience)) return false;
         }
         return true;
-    }), [allJobs, filters]);
+    }), [allJobs, filters, searchedQuery]);
 
     const search = (value = query) => { setQuery(value); dispatch(setSearchedQuery(value.trim())); };
     useEffect(()=>{

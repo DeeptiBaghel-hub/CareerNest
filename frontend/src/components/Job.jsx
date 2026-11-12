@@ -6,6 +6,7 @@ import { Badge } from './ui/badge'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
+import { formatSalary } from '@/utils/jobUtils'
 
 const Job = ({job, onSavedChange}) => {
     const navigate = useNavigate();
@@ -70,7 +71,7 @@ const Job = ({job, onSavedChange}) => {
             <div className='mt-4 flex flex-wrap items-center gap-2'>
                 <Badge className={'text-blue-700 font-bold'} variant="ghost">{job?.position} Positions</Badge>
                 <Badge className={'text-[#d97706] font-bold'} variant="ghost">{job?.jobType}</Badge>
-                <Badge className={'text-[#4f46e5] font-bold'} variant="ghost">₹{job?.salary} LPA</Badge>
+                <Badge className={'text-[#4f46e5] font-bold'} variant="ghost">{formatSalary(job?.salary)}</Badge>
             </div>
             <div className='mt-auto flex items-center gap-3 pt-5'>
                 <Button onClick={()=> navigate(`/description/${job?._id}`)} variant="outline">Details</Button>

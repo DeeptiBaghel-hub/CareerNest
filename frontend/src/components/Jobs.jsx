@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Navbar from './shared/Navbar'
 import FilterCard from './FilterCard'
 import Job from './Job';
 import { useSelector } from 'react-redux';
 import useGetAllJobs from '@/hooks/useGetAllJobs';
 import { defaultJobFilters } from './FilterCard';
+import { getMinimumAnnualSalary, matchesJobSearch, matchesWorkLocation } from '@/utils/jobUtils';
 
 const Jobs = () => {
     useGetAllJobs(); // this page never fetched jobs itself — it only worked if Home/Browse had already populated redux first
@@ -12,20 +13,16 @@ const Jobs = () => {
     const [filters, setFilters] = useState(defaultJobFilters);
 
     const filterJobs = useMemo(() => allJobs.filter(job => {
-        const query = searchedQuery.toLowerCase();
-        if (query && !`${job.title || ''} ${job.description || ''} ${job.location || ''} ${job.company?.name || ''}`.toLowerCase().includes(query)) return false;
+        if (!matchesJobSearch(job, searchedQuery)) return false;
         if (filters.posted !== 'any') {
             const age = (Date.now() - new Date(job.createdAt).getTime()) / 86400000;
             if (!Number.isFinite(age) || (filters.posted === 'today' ? age >= 1 : age > Number(filters.posted))) return false;
         }
         if (filters.salary !== 'any') {
-            const raw = String(job.salary || '').replace(/,/g, '');
-            const values = raw.match(/\d+(?:\.\d+)?/g)?.map(Number) || [];
-            if ((values.length ? Math.max(...values) * (/lpa/i.test(raw) ? 100000 : 1) : 0) < Number(filters.salary)) return false;
+            if (getMinimumAnnualSalary(job.salary) < Number(filters.salary)) return false;
         }
-        if (filters.payPeriod !== 'any' && filters.payPeriod !== 'yearly') return false;
         if (filters.jobType !== 'any' && !String(job.jobType || '').toLowerCase().includes(filters.jobType)) return false;
-        if (filters.remote !== 'any' && !`${job.jobType || ''} ${job.location || ''} ${job.description || ''}`.toLowerCase().includes(filters.remote)) return false;
+        if (!matchesWorkLocation(job, filters.remote)) return false;
         if (filters.experience !== 'any' && Number(String(job.experienceLevel || '').match(/\d+(?:\.\d+)?/)?.[0] || 0) < Number(filters.experience)) return false;
         return true;
     }), [allJobs, searchedQuery, filters]);

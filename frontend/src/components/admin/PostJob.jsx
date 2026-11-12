@@ -46,6 +46,10 @@ const PostJob = () => {
         setInput({...input, companyId: value});
     };
 
+    const workModeChangeHandler = (value) => {
+        setInput({ ...input, workMode: value });
+    };
+
     useEffect(() => {
         if (!jobId) return;
 
@@ -203,14 +207,19 @@ const PostJob = () => {
                         </div>
                         <div>
                             <Label>Work Mode</Label>
-                            <Input
-                                type="text"
-                                name="workMode"
-                                placeholder="e.g. Hybrid"
-                                value={input.workMode}
-                                onChange={changeEventHandler}
-                                className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
-                            />
+                            <Select value={input.workMode || undefined} onValueChange={workModeChangeHandler}>
+                                <SelectTrigger className="my-1 w-full">
+                                    <SelectValue placeholder="Select a work mode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="On-site">On-site</SelectItem>
+                                        <SelectItem value="Remote">Remote</SelectItem>
+                                        <SelectItem value="Hybrid">Hybrid</SelectItem>
+                                        <SelectItem value="Temporarily remote">Temporarily remote</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div>
                             <Label>Application Deadline</Label>

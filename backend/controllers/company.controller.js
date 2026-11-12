@@ -94,8 +94,27 @@ export const getCompanyById = async (req, res) => {
 
 export const updateCompany = async (req, res) => {
     try {
-        const { name, description, website, location } = req.body;
+        const { name, description, website, location, industry, companySize, founded, companyType, specializations } = req.body;
         const updateData = { name, description, website, location };
+        if (industry !== undefined) updateData.industry = industry;
+        if (companySize !== undefined) updateData.companySize = companySize;
+        if (founded !== undefined) {
+            const parsedFounded = String(founded).trim() ? Number(founded) : null;
+            if (parsedFounded !== null && (!Number.isInteger(parsedFounded) || parsedFounded < 1)) {
+                return res.status(400).json({
+                    message: "Please provide a valid founding year.",
+                    success: false
+                });
+            }
+            updateData.founded = parsedFounded;
+        }
+        if (companyType !== undefined) updateData.companyType = companyType;
+        if (specializations !== undefined) {
+            updateData.specializations = String(specializations || "")
+                .split(",")
+                .map((specialization) => specialization.trim())
+                .filter(Boolean);
+        }
 
         if (req.file) {
             const fileUri = getDataUri(req.file);

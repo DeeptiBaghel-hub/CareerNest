@@ -9,10 +9,33 @@ import { setSingleJob } from '@/redux/jobSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { BriefcaseBusiness, CalendarDays, MapPin, Users } from 'lucide-react';
+import { formatSalary } from '@/utils/jobUtils';
+
+const getSafeWebsiteUrl = (value) => {
+    if (!value) return null;
+    try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : null;
+    } catch {
+        return null;
+    }
+};
 
 const JobDescription = () => {
     const { singleJob } = useSelector(store => store.job);
     const { user } = useSelector(store => store.auth);
+    const company = singleJob?.company;
+    const companyWebsiteUrl = getSafeWebsiteUrl(company?.website);
+    const hasCompanyDetails = company && (
+        company.description ||
+        company.industry ||
+        company.companySize ||
+        company.founded ||
+        company.companyType ||
+        company.location ||
+        company.website ||
+        company.specializations?.length
+    );
     const isIntiallyApplied = singleJob?.applications?.some(application => application.applicant === user?._id) || false;
     const [isApplied, setIsApplied] = useState(isIntiallyApplied);
 
@@ -66,7 +89,7 @@ const JobDescription = () => {
                     </div>
                     <div className="grid gap-4 py-6 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><MapPin className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Location</p><p className="font-medium">{singleJob?.location || "Not specified"}</p></div></div>
-                        <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><BriefcaseBusiness className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Salary</p><p className="font-medium">₹{singleJob?.salary}{!String(singleJob?.salary || "").includes("LPA") && " LPA"}</p></div></div>
+                        <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><BriefcaseBusiness className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Salary</p><p className="font-medium">{formatSalary(singleJob?.salary)}</p></div></div>
                         <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><Users className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Applicants</p><p className="font-medium">{singleJob?.applications?.length ?? 0} applicants</p></div></div>
                         {singleJob?.workMode && <div className="flex items-center gap-3 rounded-2xl bg-secondary/60 p-4"><BriefcaseBusiness className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Work mode</p><p className="font-medium">{singleJob.workMode}</p></div></div>}
                     </div>
@@ -74,6 +97,19 @@ const JobDescription = () => {
                         <div><h2 className="text-lg font-semibold">About the role</h2><p className="mt-3 whitespace-pre-line leading-7 text-muted-foreground">{singleJob?.description}</p></div>
                         {singleJob?.requirements?.length > 0 && <div><h2 className="text-lg font-semibold">What you’ll need</h2><ul className="mt-3 grid gap-2 text-muted-foreground sm:grid-cols-2">{singleJob.requirements.map((requirement, index) => <li key={`${requirement}-${index}`} className="flex gap-2"><span className="text-primary">•</span>{requirement}</li>)}</ul></div>}
                         {singleJob?.benefits?.length > 0 && <div><h2 className="text-lg font-semibold">Benefits</h2><ul className="mt-3 grid gap-2 text-muted-foreground sm:grid-cols-2">{singleJob.benefits.map((benefit, index) => <li key={`${benefit}-${index}`} className="flex gap-2"><span className="text-primary">•</span>{benefit}</li>)}</ul></div>}
+                        {hasCompanyDetails && <section className="space-y-4 rounded-2xl bg-secondary/40 p-5">
+                            <h2 className="text-lg font-semibold">About {company.name}</h2>
+                            {company.description && <p className="whitespace-pre-line leading-7 text-muted-foreground">{company.description}</p>}
+                            <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                                {company.industry && <div><dt className="font-medium">Industry</dt><dd className="mt-1 text-muted-foreground">{company.industry}</dd></div>}
+                                {company.companySize && <div><dt className="font-medium">Company size</dt><dd className="mt-1 text-muted-foreground">{company.companySize}</dd></div>}
+                                {company.founded && <div><dt className="font-medium">Founded</dt><dd className="mt-1 text-muted-foreground">{company.founded}</dd></div>}
+                                {company.companyType && <div><dt className="font-medium">Company type</dt><dd className="mt-1 text-muted-foreground">{company.companyType}</dd></div>}
+                                {company.location && <div><dt className="font-medium">Headquarters</dt><dd className="mt-1 text-muted-foreground">{company.location}</dd></div>}
+                                {company.website && <div><dt className="font-medium">Website</dt><dd className="mt-1 text-muted-foreground">{companyWebsiteUrl ? <a href={companyWebsiteUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">{company.website}</a> : company.website}</dd></div>}
+                            </dl>
+                            {company.specializations?.length > 0 && <div><h3 className="font-medium">Specializations</h3><ul className="mt-2 grid gap-2 text-muted-foreground sm:grid-cols-2">{company.specializations.map((specialization, index) => <li key={`${specialization}-${index}`} className="flex gap-2"><span className="text-primary">•</span>{specialization}</li>)}</ul></div>}
+                        </section>}
                         {singleJob?.applicationDeadline && <p className="flex items-center gap-2 text-sm font-medium"><CalendarDays className="size-4 text-primary" />Apply by {new Date(singleJob.applicationDeadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>}
                         <p className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarDays className="size-4" />Posted {singleJob?.createdAt ? new Date(singleJob.createdAt).toLocaleDateString() : "—"}</p>
                     </div>
