@@ -33,6 +33,14 @@ const jobSchema=new mongoose.Schema({
         type:String,
         default:""
     },
+    isArchived:{
+        type:Boolean,
+        default:false
+    },
+    archivedAt:{
+        type:Date,
+        default:null
+    },
     benefits:{
         type:[String],
         default:[]

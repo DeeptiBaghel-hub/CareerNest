@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Job } from "../models/job.model.js";
 import { Company } from "../models/company.model.js";
 import { User } from "../models/user.model.js";
@@ -115,6 +116,63 @@ export const updateJob = async (req, res) => {
         });
     }
 }
+
+export const archiveJob = async (req, res) => {
+    try {
+        const user = await User.findById(req.id).select("role");
+        if (!user || user.role !== "recruiter") {
+            return res.status(403).json({ message: "Recruiter access required.", success: false });
+        }
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: "Please provide a valid job id.", success: false });
+        }
+
+        const job = await Job.findOne({ _id: req.params.id, created_by: req.id });
+        if (!job) {
+            return res.status(404).json({ message: "Job not found.", success: false });
+        }
+
+        if (!job.isArchived) {
+            job.isArchived = true;
+            job.archivedAt = new Date();
+            await job.save();
+        }
+        return res.status(200).json({
+            message: "Job archived. Its applications are kept in history.",
+            job,
+            success: true
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Something went wrong while archiving the job.", success: false });
+    }
+};
+
+export const restoreJob = async (req, res) => {
+    try {
+        const user = await User.findById(req.id).select("role");
+        if (!user || user.role !== "recruiter") {
+            return res.status(403).json({ message: "Recruiter access required.", success: false });
+        }
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: "Please provide a valid job id.", success: false });
+        }
+
+        const job = await Job.findOne({ _id: req.params.id, created_by: req.id });
+        if (!job) {
+            return res.status(404).json({ message: "Job not found.", success: false });
+        }
+
+        job.isArchived = false;
+        job.archivedAt = null;
+        await job.save();
+        return res.status(200).json({ message: "Job restored.", job, success: true });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Something went wrong while restoring the job.", success: false });
+    }
+};
+
 // student k liye
 export const getAllJobs = async (req, res) => {
     try {
@@ -123,7 +181,8 @@ export const getAllJobs = async (req, res) => {
             $or: [
                 { title: { $regex: keyword, $options: "i" } },
                 { description: { $regex: keyword, $options: "i" } },
-            ]
+            ],
+            isArchived: { $ne: true }
         };
         const jobs = await Job.find(query).populate({
             path: "company"
@@ -150,7 +209,7 @@ export const getAllJobs = async (req, res) => {
 export const getJobById = async (req, res) => {
     try {
         const jobId = req.params.id;
-        const job = await Job.findById(jobId)
+        const job = await Job.findOne({ _id: jobId, isArchived: { $ne: true } })
             .populate({ path: "company" })
             .populate({ path: "applications" });
         if (!job) {
