@@ -1,59 +1,30 @@
-import React, { useEffect, useState } from 'react'
-import { RadioGroup, RadioGroupItem } from './ui/radio-group'
-import { Label } from './ui/label'
-import { useDispatch } from 'react-redux'
-import { setSearchedQuery } from '@/redux/jobSlice'
+import React from 'react'
+import { SlidersHorizontal } from 'lucide-react'
 
-const fitlerData = [
-    {
-        fitlerType: "Location",
-        array: ["Delhi NCR", "Bangalore", "Hyderabad", "Pune", "Mumbai"]
-    },
-    {
-        fitlerType: "Industry",
-        array: ["Frontend Developer", "Backend Developer", "FullStack Developer"]
-    },
-    {
-        fitlerType: "Salary",
-        array: ["0-40k", "42-1lakh", "1lakh to 5lakh"]
-    },
+export const defaultJobFilters = { posted: 'any', salary: 'any', payPeriod: 'any', experience: 'any', jobType: 'any', remote: 'any' }
+
+const filterGroups = [
+    { key: 'posted', title: 'Date posted', options: [['any', 'All days'], ['today', 'Today'], ['3', 'Last 3 days'], ['7', 'Last 7 days']] },
+    { key: 'salary', title: 'Minimum salary', options: [['any', 'Any salary'], ['200000', '₹2,00,000+'], ['300000', '₹3,00,000+'], ['500000', '₹5,00,000+'], ['700000', '₹7,00,000+'], ['900000', '₹9,00,000+'], ['1300000', '₹13,00,000+']] },
+    { key: 'payPeriod', title: 'Pay period', options: [['any', 'Any period'], ['hourly', 'Hourly'], ['daily', 'Daily'], ['monthly', 'Monthly'], ['yearly', 'Yearly']] },
+    { key: 'experience', title: 'Work experience', options: [['any', 'Any experience'], ['0', 'No experience'], ['1', '1+ year'], ['3', '3+ years'], ['5', '5+ years']] },
+    { key: 'jobType', title: 'Job type', options: [['any', 'Any type'], ['full-time', 'Full-time'], ['part-time', 'Part-time']] },
+    { key: 'remote', title: 'Work location', options: [['any', 'Any location'], ['remote', 'Remote'], ['hybrid', 'Hybrid'], ['temporarily remote', 'Temporarily remote']] },
 ]
 
-const FilterCard = () => {
-    const [selectedValue, setSelectedValue] = useState('');
-    const dispatch = useDispatch();
-    const changeHandler = (value) => {
-        setSelectedValue(value);
-    }
-    useEffect(() => {
-        dispatch(setSearchedQuery(selectedValue));
-    }, [selectedValue]);
-    return (
-        <div className='w-full bg-card text-card-foreground border border-border p-3 rounded-md'>
-            <h1 className='font-bold text-lg'>Filter Jobs</h1>
-            <hr className='mt-3' />
-            <RadioGroup value={selectedValue} onValueChange={changeHandler}>
-                {
-                    fitlerData.map((data, index) => (
-                        <div key={index}>
-                            <h1 className='font-bold text-lg'>{data.fitlerType}</h1>
-                            {
-                                data.array.map((item, idx) => {
-                                    const itemId = `id${index}-${idx}`
-                                    return (
-                                        <div className='flex items-center space-x-2 my-2' key={itemId}>
-                                            <RadioGroupItem value={item} id={itemId} />
-                                            <Label htmlFor={itemId}>{item}</Label>
-                                        </div>
-                                    )
-                                })
-                            }
-                        </div>
-                    ))
-                }
-            </RadioGroup>
+const FilterCard = ({ filters = defaultJobFilters, onChange = () => {} }) => (
+    <aside className="rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-sm">
+        <div className="mb-4 flex items-center gap-2 border-b border-border pb-4"><SlidersHorizontal className="size-4 text-primary" /><h2 className="font-semibold">Filters</h2></div>
+        <div className="space-y-5">
+            {filterGroups.map(group => <label className="block" key={group.key}>
+                <span className="mb-2 block text-sm font-semibold">{group.title}</span>
+                <select value={filters[group.key]} onChange={event => onChange({ ...filters, [group.key]: event.target.value })} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    {group.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </select>
+            </label>)}
         </div>
-    )
-}
+        <button type="button" onClick={() => onChange(defaultJobFilters)} className="mt-5 text-sm font-medium text-primary hover:underline">Clear all filters</button>
+    </aside>
+)
 
 export default FilterCard
