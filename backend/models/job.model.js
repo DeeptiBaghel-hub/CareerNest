@@ -29,6 +29,17 @@ const jobSchema=new mongoose.Schema({
         type:String,
         required:true
     },
+    workMode:{
+        type:String,
+        default:""
+    },
+    benefits:{
+        type:[String],
+        default:[]
+    },
+    applicationDeadline:{
+        type:Date
+    },
     position:{
         type:Number,
         required:true
