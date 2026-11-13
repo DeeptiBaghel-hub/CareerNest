@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatSalary, getMinimumAnnualSalary, matchesJobSearch, matchesWorkMode } from './jobUtils.js';
+import { formatSalary, getJobSearchSuggestions, getMinimumAnnualSalary, matchesJobSearch, matchesWorkMode, sortJobs } from './jobUtils.js';
 
 describe('job display and filter helpers', () => {
     it('matches job searches across title, location, and company', () => {
@@ -9,6 +9,18 @@ describe('job display and filter helpers', () => {
         assert.equal(matchesJobSearch(job, 'hyderabad'), true);
         assert.equal(matchesJobSearch(job, 'Java Hyderabad'), true);
         assert.equal(matchesJobSearch(job, 'designer'), false);
+    });
+
+    it('suggests unique matching roles, companies, and locations from loaded jobs', () => {
+        const jobs = [
+            { title: 'Frontend Developer', location: 'Mumbai', company: { name: 'Acme' } },
+            { title: 'Frontend Engineer', location: 'Mumbai', company: { name: 'Beta' } },
+            { title: 'Designer', location: 'Pune', company: { name: 'Acme' } },
+        ];
+        assert.deepEqual(getJobSearchSuggestions(jobs, 'front'), ['Frontend Developer', 'Frontend Engineer']);
+        assert.deepEqual(getJobSearchSuggestions(jobs, 'acme'), ['Acme']);
+        assert.deepEqual(getJobSearchSuggestions(jobs, 'mum', 'location'), ['Mumbai']);
+        assert.deepEqual(getJobSearchSuggestions(jobs, '', 'location'), []);
     });
 
     it('matches the selected work mode exactly instead of searching descriptions or overlapping modes', () => {
@@ -35,5 +47,15 @@ describe('job display and filter helpers', () => {
         assert.equal(getMinimumAnnualSalary('5-9'), 500000);
         assert.equal(getMinimumAnnualSalary('₹3.5 – 6 LPA'), 350000);
         assert.equal(getMinimumAnnualSalary('700000'), 700000);
+    });
+
+    it('sorts jobs by newest or salary without changing the original list', () => {
+        const jobs = [
+            { _id: 'older', createdAt: '2026-01-01', salary: '₹8 LPA' },
+            { _id: 'newer', createdAt: '2026-02-01', salary: '₹3 LPA' },
+        ];
+        assert.deepEqual(sortJobs(jobs, 'newest').map(job => job._id), ['newer', 'older']);
+        assert.deepEqual(sortJobs(jobs, 'salary').map(job => job._id), ['older', 'newer']);
+        assert.deepEqual(jobs.map(job => job._id), ['older', 'newer']);
     });
 });
