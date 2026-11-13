@@ -203,13 +203,14 @@ export const updateStatus = async (req,res) => {
         if (!application.job || String(application.job.created_by) !== String(req.id)) {
             return res.status(403).json({ message: "You can only update applications for your own jobs.", success: false });
         }
-        if (application.status === "withdrawn") {
+        const updatedApplication = await Application.findOneAndUpdate(
+            { _id: application._id, status: { $ne: "withdrawn" } },
+            { $set: { status: status.toLowerCase() } },
+            { new: true }
+        );
+        if (!updatedApplication) {
             return res.status(409).json({ message: "Withdrawn applications cannot be updated.", success: false });
         }
-
-        // update the status
-        application.status = status.toLowerCase();
-        await application.save();
 
         return res.status(200).json({
             message:"Status updated successfully.",
