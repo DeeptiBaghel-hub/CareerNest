@@ -1,11 +1,11 @@
 const normalize = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
 
 export const matchesJobSearch = (job, query) => {
-    const searchTerm = normalize(query);
-    if (!searchTerm) return true;
+    const searchTerms = normalize(query).split(' ').filter(Boolean);
+    if (!searchTerms.length) return true;
 
-    return normalize(`${job?.title || ''} ${job?.description || ''} ${job?.location || ''} ${job?.company?.name || ''}`)
-        .includes(searchTerm);
+    const searchableText = normalize(`${job?.title || ''} ${job?.description || ''} ${job?.location || ''} ${job?.company?.name || ''}`);
+    return searchTerms.every(searchTerm => searchableText.includes(searchTerm));
 };
 
 const matchesModeValue = (value, selectedMode) => {

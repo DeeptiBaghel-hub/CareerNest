@@ -69,9 +69,9 @@ const Job = ({job, onSavedChange}) => {
                 <p className='text-sm text-muted-foreground line-clamp-4'>{job?.description}</p>
             </div>
             <div className='mt-4 flex flex-wrap items-center gap-2'>
-                <Badge className={'text-blue-700 font-bold'} variant="ghost">{job?.position} Positions</Badge>
-                <Badge className={'text-[#d97706] font-bold'} variant="ghost">{job?.jobType}</Badge>
-                <Badge className={'text-[#4f46e5] font-bold'} variant="ghost">{formatSalary(job?.salary)}</Badge>
+                <Badge className="rounded-full bg-secondary px-2.5 py-1 font-semibold text-primary" variant="ghost">{job?.position} Positions</Badge>
+                <Badge className="rounded-full bg-accent px-2.5 py-1 font-semibold text-accent-foreground" variant="ghost">{job?.jobType}</Badge>
+                <Badge className="rounded-full bg-muted px-2.5 py-1 font-semibold text-foreground" variant="ghost">{formatSalary(job?.salary)}</Badge>
             </div>
             <div className='mt-auto flex items-center gap-3 pt-5'>
                 <Button onClick={()=> navigate(`/description/${job?._id}`)} variant="outline">Details</Button>
