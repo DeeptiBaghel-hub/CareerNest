@@ -5,11 +5,13 @@ A full-stack MERN job portal that connects job seekers with recruiters. Job seek
 ## Features
 
 - JWT-based authentication with role-based access (**Student / Job Seeker** and **Recruiter**)
+- Responsive sign-up and sign-in pages with account-role selection and optional profile-photo upload
 - Profile management with resume and profile-photo uploads (via Cloudinary)
 - Company registration and management for recruiters
 - Job posting, browsing, category filters, and search
 - One-click job applications and application-status tracking
-- Recruiter dashboard to view applicants and update application status
+- Recruiter dashboard with active/archived job filters, applicant counts, and application-status management
+- Job-posting form with a candidate-facing preview
 
 ## Tech Stack
 
@@ -28,7 +30,7 @@ A full-stack MERN job portal that connects job seekers with recruiters. Job seek
 ## Project Structure
 
 ```
-Job-portal-main/
+CareerNest/
 ├── frontend/          # React + Vite client
 │   ├── src/
 │   │   ├── components/  # UI, pages, admin & auth views
@@ -52,7 +54,7 @@ Base path: `/api/v1`
 
 | Resource | Endpoint | Method | Auth | Description |
 |---|---|---|---|---|
-| User | `/user/register` | POST | No | Register a new user (with resume upload) |
+| User | `/user/register` | POST | No | Register a student or recruiter (optional profile photo) |
 | User | `/user/login` | POST | No | Log in |
 | User | `/user/logout` | GET | No | Log out |
 | User | `/user/profile/update` | POST | Yes | Update profile / resume |
@@ -82,7 +84,7 @@ There's also a `GET /health` endpoint on the backend for uptime checks.
 
 ```bash
 git clone https://github.com/DeeptiBaghel-hub/job-portal-main.git
-cd job-portal-main/Job-portal-main
+cd job-portal-main
 ```
 
 ### 2. Backend
@@ -139,6 +141,23 @@ npm run dev
 
 The app will be available at `http://localhost:5173`.
 
+### Run checks
+
+From the `frontend/` directory:
+
+```bash
+npm run lint
+npm test
+npm run build
+```
+
+From the `backend/` directory:
+
+```bash
+npm test
+node --check index.js
+```
+
 ## Deployment
 
 The repo ships with everything needed to deploy the backend to **Render** and the frontend to **Vercel**.
@@ -175,7 +194,7 @@ Once both are live, go back to the Render service and update `CLIENT_URL` to you
 
 ### 4. CI/CD
 
-`.github/workflows/ci.yml` runs on pushes/PRs to `main`/`master`, installing dependencies and checking the frontend build plus backend syntax. Connect Render's and Vercel's GitHub integrations so pushes to `main` auto-deploy once CI passes.
+`.github/workflows/ci.yml` runs on pushes and pull requests to `developer`, `main`, and `master`. It runs frontend lint, tests, and a production build, plus backend tests and syntax checks. Connect Render's and Vercel's GitHub integrations so pushes to your deployment branch trigger production deployments after CI passes.
 
 > Never commit real `.env` files — use the `.env.example` templates locally and set the actual values in the Vercel/Render dashboards.
 
