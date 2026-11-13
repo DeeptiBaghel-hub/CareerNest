@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import Navbar from '../shared/Navbar'
 import { Button } from '../ui/button'
 import { ArrowLeft, Loader2 } from 'lucide-react'
@@ -14,29 +14,31 @@ import useGetCompanyById from '@/hooks/useGetCompanyById'
 const CompanySetup = () => {
     const params = useParams();
     useGetCompanyById(params.id);
-    const [input, setInput] = useState({
-        name: "",
-        description: "",
-        website: "",
-        location: "",
-        industry: "",
-        companySize: "",
-        founded: "",
-        companyType: "",
-        specializations: "",
-        file: null
-    });
     const {singleCompany} = useSelector(store=>store.company);
+    const [editedFields, setEditedFields] = useState({});
+    const input = {
+        name: singleCompany?.name || "",
+        description: singleCompany?.description || "",
+        website: singleCompany?.website || "",
+        location: singleCompany?.location || "",
+        industry: singleCompany?.industry || "",
+        companySize: singleCompany?.companySize || "",
+        founded: singleCompany?.founded ? String(singleCompany.founded) : "",
+        companyType: singleCompany?.companyType || "",
+        specializations: singleCompany?.specializations?.join(", ") || "",
+        file: null,
+        ...editedFields,
+    };
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const changeEventHandler = (e) => {
-        setInput({ ...input, [e.target.name]: e.target.value });
+        setEditedFields(fields => ({ ...fields, [e.target.name]: e.target.value }));
     }
 
     const changeFileHandler = (e) => {
         const file = e.target.files?.[0];
-        setInput({ ...input, file });
+        setEditedFields(fields => ({ ...fields, file }));
     }
 
     const submitHandler = async (e) => {
@@ -74,32 +76,13 @@ const CompanySetup = () => {
         }
     }
 
-    useEffect(() => {
-        // singleCompany starts out as null until useGetCompanyById's request
-        // resolves, and this effect also runs on that first render — so
-        // reading singleCompany.name directly used to throw immediately
-        // every time this page loaded (edit from the companies list).
-        setInput({
-            name: singleCompany?.name || "",
-            description: singleCompany?.description || "",
-            website: singleCompany?.website || "",
-            location: singleCompany?.location || "",
-            industry: singleCompany?.industry || "",
-            companySize: singleCompany?.companySize || "",
-            founded: singleCompany?.founded ? String(singleCompany.founded) : "",
-            companyType: singleCompany?.companyType || "",
-            specializations: singleCompany?.specializations?.join(", ") || "",
-            file: singleCompany?.file || null
-        })
-    },[singleCompany]);
-
     return (
         <div>
             <Navbar />
             <div className='max-w-xl mx-auto my-10'>
                 <form onSubmit={submitHandler}>
                     <div className='flex items-center gap-5 p-8'>
-                        <Button onClick={() => navigate("/admin/companies")} variant="outline" className="flex items-center gap-2 text-muted-foreground font-semibold">
+                        <Button type="button" onClick={() => navigate("/admin/companies")} variant="outline" className="flex items-center gap-2 text-muted-foreground font-semibold">
                             <ArrowLeft />
                             <span>Back</span>
                         </Button>
@@ -111,6 +94,7 @@ const CompanySetup = () => {
                             <Input
                                 type="text"
                                 name="name"
+                                required
                                 value={input.name}
                                 onChange={changeEventHandler}
                             />
@@ -203,7 +187,7 @@ const CompanySetup = () => {
                         </div>
                     </div>
                     {
-                        loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Update</Button>
+                        loading ? <Button type="submit" className="w-full my-4" disabled> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Update</Button>
                     }
                 </form>
             </div>

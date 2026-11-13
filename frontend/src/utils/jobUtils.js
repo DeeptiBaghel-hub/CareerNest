@@ -4,7 +4,7 @@ export const matchesJobSearch = (job, query) => {
     const searchTerms = normalize(query).split(' ').filter(Boolean);
     if (!searchTerms.length) return true;
 
-    const searchableText = normalize(`${job?.title || ''} ${job?.description || ''} ${job?.location || ''} ${job?.company?.name || ''}`);
+    const searchableText = normalize(`${job?.title || ''} ${job?.description || ''} ${job?.location || ''} ${job?.company?.name || ''} ${job?.workMode || ''} ${job?.jobType || ''}`);
     return searchTerms.every(searchTerm => searchableText.includes(searchTerm));
 };
 

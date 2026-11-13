@@ -11,6 +11,11 @@ describe('job display and filter helpers', () => {
         assert.equal(matchesJobSearch(job, 'designer'), false);
     });
 
+    it('matches jobs by work mode and job type', () => {
+        assert.equal(matchesJobSearch({ title: 'Developer', workMode: 'Remote' }, 'remote'), true);
+        assert.equal(matchesJobSearch({ title: 'Designer', jobType: 'Part-Time' }, 'part-time'), true);
+    });
+
     it('suggests unique matching roles, companies, and locations from loaded jobs', () => {
         const jobs = [
             { title: 'Frontend Developer', location: 'Mumbai', company: { name: 'Acme' } },

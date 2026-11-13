@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Eye, MoreHorizontal, Pencil, RotateCcw, Trash2 } from 'lucide-react'
@@ -7,27 +7,30 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { toast } from 'sonner'
 import { JOB_API_END_POINT } from '@/utils/constant'
-import { setAllAdminJobs } from '@/redux/jobSlice'
+import { setAdminJobArchiveState } from '@/redux/jobSlice'
 
-const AdminJobsTable = () => { 
-    const {allAdminJobs, searchJobByText} = useSelector(store=>store.job);
+const AdminJobsTable = ({ statusFilter = "all" }) => {
+    const {allAdminJobs = [], searchJobByText = ""} = useSelector(store=>store.job);
 
-    const [filterJobs, setFilterJobs] = useState(allAdminJobs);
     const [workingJobId, setWorkingJobId] = useState(null);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    useEffect(()=>{ 
-        console.log('called');
-        const filteredJobs = allAdminJobs.filter((job)=>{
-            if(!searchJobByText){
-                return true;
-            };
-            return job?.title?.toLowerCase()?.includes(searchJobByText.toLowerCase()) || job?.company?.name?.toLowerCase()?.includes(searchJobByText.toLowerCase());
+    const filterJobs = useMemo(() => allAdminJobs.filter(job => {
+        const searchTerm = String(searchJobByText).trim().toLowerCase();
+        const matchesSearch = !searchTerm
+            || job?.title?.toLowerCase().includes(searchTerm)
+            || job?.company?.name?.toLowerCase().includes(searchTerm);
+        const matchesStatus = statusFilter === "all"
+            || (statusFilter === "archived" ? job?.isArchived : !job?.isArchived);
+        return matchesSearch && matchesStatus;
+    }), [allAdminJobs, searchJobByText, statusFilter]);
 
-        });
-        setFilterJobs(filteredJobs);
-    },[allAdminJobs,searchJobByText])
+    const updateArchiveState = (job) => dispatch(setAdminJobArchiveState({
+        id: job._id,
+        isArchived: job.isArchived,
+        archivedAt: job.archivedAt,
+    }));
 
     const archiveJob = async (job) => {
         if (!window.confirm(`Archive "${job.title}"? It will disappear from job searches, but its applications will be kept.`)) return;
@@ -36,11 +39,7 @@ const AdminJobsTable = () => {
             setWorkingJobId(job._id);
             const response = await axios.delete(`${JOB_API_END_POINT}/${job._id}`, { withCredentials: true });
             if (response.data.success) {
-                dispatch(setAllAdminJobs(allAdminJobs.map(item =>
-                    item._id === job._id
-                        ? { ...item, isArchived: response.data.job.isArchived, archivedAt: response.data.job.archivedAt }
-                        : item
-                )));
+                updateArchiveState(response.data.job);
                 toast.success(response.data.message);
             }
         } catch (error) {
@@ -55,11 +54,7 @@ const AdminJobsTable = () => {
             setWorkingJobId(job._id);
             const response = await axios.put(`${JOB_API_END_POINT}/${job._id}/restore`, {}, { withCredentials: true });
             if (response.data.success) {
-                dispatch(setAllAdminJobs(allAdminJobs.map(item =>
-                    item._id === job._id
-                        ? { ...item, isArchived: response.data.job.isArchived, archivedAt: response.data.job.archivedAt }
-                        : item
-                )));
+                updateArchiveState(response.data.job);
                 toast.success(response.data.message);
             }
         } catch (error) {
@@ -72,24 +67,26 @@ const AdminJobsTable = () => {
     return (
         <div>
             <Table>
-                <TableCaption>A list of your recent  posted jobs</TableCaption>
+                <TableCaption>Your jobs and applicant counts. Archived jobs retain their application history.</TableCaption>
                 <TableHeader>
                     <TableRow>
                         <TableHead>Company Name</TableHead>
                         <TableHead>Role</TableHead>
-                        <TableHead>Date</TableHead>
+                        <TableHead>Posted</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Applicants</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {
-                        filterJobs?.map((job) => (
-                            <tr key={job._id}>
+                        filterJobs.length ? filterJobs.map((job) => (
+                            <TableRow key={job._id}>
                                 <TableCell>{job?.company?.name}</TableCell>
                                 <TableCell>{job?.title}</TableCell>
-                                <TableCell>{job?.createdAt.split("T")[0]}</TableCell>
-                                <TableCell>{job?.isArchived ? "Archived" : "Active"}</TableCell>
+                                <TableCell>{job?.createdAt && !Number.isNaN(Date.parse(job.createdAt)) ? new Date(job.createdAt).toLocaleDateString() : "—"}</TableCell>
+                                <TableCell><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${job?.isArchived ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}>{job?.isArchived ? "Archived" : "Active"}</span></TableCell>
+                                <TableCell>{job?.applications?.length || 0}</TableCell>
                                 <TableCell className="text-right cursor-pointer">
                                     <Popover>
                                         <PopoverTrigger><MoreHorizontal /></PopoverTrigger>
@@ -114,9 +111,10 @@ const AdminJobsTable = () => {
                                         </PopoverContent>
                                     </Popover>
                                 </TableCell>
-                            </tr>
-
-                        ))
+                            </TableRow>
+                        )) : <TableRow><TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                            {searchJobByText || statusFilter !== "all" ? "No jobs match these filters." : "No jobs posted yet. Create your first listing to get started."}
+                        </TableCell></TableRow>
                     }
                 </TableBody>
             </Table>
