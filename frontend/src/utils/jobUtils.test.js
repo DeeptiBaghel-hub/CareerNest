@@ -7,6 +7,7 @@ describe('job display and filter helpers', () => {
         const job = { title: 'Java Developer', location: 'Hyderabad', company: { name: 'Wipro' } };
         assert.equal(matchesJobSearch(job, 'wipro'), true);
         assert.equal(matchesJobSearch(job, 'hyderabad'), true);
+        assert.equal(matchesJobSearch(job, 'Java Hyderabad'), true);
         assert.equal(matchesJobSearch(job, 'designer'), false);
     });
 
