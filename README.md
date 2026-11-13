@@ -74,7 +74,7 @@ There's also a `GET /health` endpoint on the backend for uptime checks.
 ## Local Setup
 
 ### Prerequisites
-- Node.js 18+ and npm
+- Node.js 20.19+ (or 22.12+) and npm
 - A MongoDB connection string (local or [MongoDB Atlas](https://www.mongodb.com/atlas))
 - A [Cloudinary](https://cloudinary.com/) account (for file uploads)
 

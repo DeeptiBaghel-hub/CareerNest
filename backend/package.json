@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed:career-data": "node scripts/seed-career-data.js",
     "test": "node --test"
   },
   "author": "",

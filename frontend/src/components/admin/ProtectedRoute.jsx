@@ -8,14 +8,10 @@ const ProtectedRoute = ({ children }) => {
 
     useEffect(() => {
         if (user === null || user.role !== 'recruiter') {
-            navigate("/");
+            navigate("/", { replace: true });
         }
-    }, []);
+    }, [navigate, user]);
 
-    return (
-        <>
-            {children}
-        </>
-    )
+    return user?.role === "recruiter" ? children : null;
 };
 export default ProtectedRoute;
