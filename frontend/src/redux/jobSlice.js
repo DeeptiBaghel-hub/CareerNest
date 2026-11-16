@@ -21,6 +21,13 @@ const jobSlice = createSlice({
         setAllAdminJobs:(state,action) => {
             state.allAdminJobs = action.payload;
         },
+        setAdminJobArchiveState:(state,action) => {
+            const job = state.allAdminJobs.find(item => item._id === action.payload.id);
+            if (job) {
+                job.isArchived = action.payload.isArchived;
+                job.archivedAt = action.payload.archivedAt;
+            }
+        },
         setSearchJobByText:(state,action) => {
             state.searchJobByText = action.payload;
         },
@@ -36,6 +43,7 @@ export const {
     setAllJobs, 
     setSingleJob, 
     setAllAdminJobs,
+    setAdminJobArchiveState,
     setSearchJobByText, 
     setAllAppliedJobs,
     setSearchedQuery

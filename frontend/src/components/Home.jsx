@@ -14,9 +14,9 @@ const Home = () => {
   const navigate = useNavigate();
   useEffect(() => {
     if (user?.role === 'recruiter') {
-      navigate("/admin/companies");
+      navigate("/admin/jobs", { replace: true });
     }
-  }, []);
+  }, [navigate, user?.role]);
   return (
     <div className="min-h-screen overflow-x-clip bg-background text-foreground">
       <Navbar />

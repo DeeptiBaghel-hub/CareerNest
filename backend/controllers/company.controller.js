@@ -7,7 +7,12 @@ import cloudinary from "../utils/cloudinary.js";
 
 export const registerCompany = async (req, res) => {
     try {
-        const { companyName } = req.body;
+        const user = await User.findById(req.id).select("role");
+        if (!user || user.role !== "recruiter") {
+            return res.status(403).json({ message: "Recruiter access required.", success: false });
+        }
+
+        const companyName = String(req.body.companyName || "").trim();
         if (!companyName) {
             return res.status(400).json({
                 message: "Company name is required.",
@@ -75,6 +80,12 @@ export const getCompany = async (req, res) => {
 export const getCompanyById = async (req, res) => {
     try {
         const companyId = req.params.id;
+        if (!mongoose.isValidObjectId(companyId)) {
+            return res.status(400).json({
+                message: "Please provide a valid company id.",
+                success: false
+            });
+        }
         const company = await Company.findById(companyId);
         if (!company) {
             return res.status(404).json({
@@ -97,6 +108,14 @@ export const getCompanyById = async (req, res) => {
 
 export const updateCompany = async (req, res) => {
     try {
+        const user = await User.findById(req.id).select("role");
+        if (!user || user.role !== "recruiter") {
+            return res.status(403).json({ message: "Recruiter access required.", success: false });
+        }
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: "Please provide a valid company id.", success: false });
+        }
+
         const { name, description, website, location, industry, companySize, founded, companyType, specializations } = req.body;
         const updateData = { name, description, website, location };
         if (industry !== undefined) updateData.industry = industry;

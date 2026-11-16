@@ -33,9 +33,10 @@ direct page refresh.
 ## 3. GitHub CI/CD
 
 The workflow in `.github/workflows/ci.yml` runs on pushes and pull requests to
-`main` or `master`. It installs dependencies and verifies both the Vercel
-frontend build and backend syntax. Enable Vercel's and Render's GitHub
-deployments for automatic production deploys after CI passes.
+`developer`, `main`, or `master`. It installs dependencies, runs the frontend
+lint, tests, and production build, and runs backend tests and syntax checks.
+Enable Vercel's and Render's GitHub deployments for automatic production
+deploys after CI passes.
 
 Do not commit `.env` files. Copy the appropriate `.env.example` file locally
 for development and configure production values in Vercel and Render.

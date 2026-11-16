@@ -4,8 +4,22 @@ export const matchesJobSearch = (job, query) => {
     const searchTerms = normalize(query).split(' ').filter(Boolean);
     if (!searchTerms.length) return true;
 
-    const searchableText = normalize(`${job?.title || ''} ${job?.description || ''} ${job?.location || ''} ${job?.company?.name || ''}`);
+    const searchableText = normalize(`${job?.title || ''} ${job?.description || ''} ${job?.location || ''} ${job?.company?.name || ''} ${job?.workMode || ''} ${job?.jobType || ''}`);
     return searchTerms.every(searchTerm => searchableText.includes(searchTerm));
+};
+
+export const getJobSearchSuggestions = (jobs, query, field = 'role') => {
+    const searchTerm = normalize(query);
+    if (!searchTerm) return [];
+
+    const candidates = jobs.flatMap(job => field === 'location'
+        ? [job?.location]
+        : [job?.title, job?.company?.name]);
+
+    return [...new Set(candidates
+        .map(value => String(value || '').trim())
+        .filter(value => normalize(value).includes(searchTerm)))]
+        .slice(0, 6);
 };
 
 const matchesModeValue = (value, selectedMode) => {
@@ -35,6 +49,18 @@ export const getMinimumAnnualSalary = (value) => {
 
     return Math.min(...values) * (/\blpa\b/i.test(raw) || values[0] < 1000 ? 100000 : 1);
 };
+
+export const sortJobs = (jobs, sortOrder = 'relevance') => [...jobs].sort((first, second) => {
+    if (sortOrder === 'newest') {
+        const firstDate = Date.parse(first?.createdAt) || 0;
+        const secondDate = Date.parse(second?.createdAt) || 0;
+        return secondDate - firstDate;
+    }
+    if (sortOrder === 'salary') {
+        return getMinimumAnnualSalary(second?.salary) - getMinimumAnnualSalary(first?.salary);
+    }
+    return 0;
+});
 
 export const formatSalary = (value) => {
     const salary = String(value || '').trim();

@@ -2,6 +2,13 @@ import mongoose from "mongoose";
 import { Job } from "../models/job.model.js";
 import { Company } from "../models/company.model.js";
 import { User } from "../models/user.model.js";
+import { buildJobSearchFilter, escapeRegex, tokenizeJobSearch } from "../utils/jobSearch.js";
+
+const parseList = (value) => {
+    const values = Array.isArray(value) ? value : String(value || "").split(",");
+    return values.map((item) => String(item).trim()).filter(Boolean);
+};
+const hasText = (value) => String(value ?? "").trim().length > 0;
 
 // admin post krega job
 export const postJob = async (req, res) => {
@@ -14,12 +21,19 @@ export const postJob = async (req, res) => {
             return res.status(403).json({ message: "Recruiter access required.", success: false });
         }
 
-        if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId) {
+        const parsedPosition = Number(position);
+        if (![title, description, salary, location, jobType, experience].every(hasText)) {
             return res.status(400).json({
-                message: "Somethin is missing.",
+                message: "Please complete all required job fields.",
                 success: false
             })
         };
+        if (!Number.isInteger(parsedPosition) || parsedPosition < 1) {
+            return res.status(400).json({ message: "Number of positions must be at least 1.", success: false });
+        }
+        if (!mongoose.isValidObjectId(companyId)) {
+            return res.status(400).json({ message: "Please select a valid company.", success: false });
+        }
         const parsedDeadline = applicationDeadline ? new Date(applicationDeadline) : undefined;
         if (applicationDeadline && Number.isNaN(parsedDeadline.getTime())) {
             return res.status(400).json({
@@ -34,7 +48,7 @@ export const postJob = async (req, res) => {
         const job = await Job.create({
             title,
             description,
-            requirements: requirements.split(",").map((r) => r.trim()).filter(Boolean),
+            requirements: parseList(requirements),
             salary: String(salary).trim(), // keep as-is so ranges like "6-12" save correctly
             location,
             jobType,
@@ -42,7 +56,7 @@ export const postJob = async (req, res) => {
             workMode: String(workMode || "").trim(),
             benefits: String(benefits || "").split(",").map((benefit) => benefit.trim()).filter(Boolean),
             applicationDeadline: parsedDeadline,
-            position,
+            position: parsedPosition,
             company: companyId,
             created_by: userId
         });
@@ -69,8 +83,15 @@ export const updateJob = async (req, res) => {
             return res.status(403).json({ message: "Recruiter access required.", success: false });
         }
 
-        if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId) {
-            return res.status(400).json({ message: "Somethin is missing.", success: false });
+        const parsedPosition = Number(position);
+        if (![title, description, salary, location, jobType, experience].every(hasText)) {
+            return res.status(400).json({ message: "Please complete all required job fields.", success: false });
+        }
+        if (!Number.isInteger(parsedPosition) || parsedPosition < 1) {
+            return res.status(400).json({ message: "Number of positions must be at least 1.", success: false });
+        }
+        if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(companyId)) {
+            return res.status(400).json({ message: "Please provide a valid job and company.", success: false });
         }
         const parsedDeadline = applicationDeadline ? new Date(applicationDeadline) : null;
         if (applicationDeadline && Number.isNaN(parsedDeadline.getTime())) {
@@ -91,7 +112,7 @@ export const updateJob = async (req, res) => {
 
         job.title = title;
         job.description = description;
-        job.requirements = requirements.split(",").map((requirement) => requirement.trim()).filter(Boolean);
+        job.requirements = parseList(requirements);
         job.salary = String(salary).trim();
         job.location = location;
         job.jobType = jobType;
@@ -99,7 +120,7 @@ export const updateJob = async (req, res) => {
         job.workMode = String(workMode || "").trim();
         job.benefits = String(benefits || "").split(",").map((benefit) => benefit.trim()).filter(Boolean);
         job.applicationDeadline = parsedDeadline;
-        job.position = position;
+        job.position = parsedPosition;
         job.company = companyId;
         await job.save();
 
@@ -176,13 +197,17 @@ export const restoreJob = async (req, res) => {
 // student k liye
 export const getAllJobs = async (req, res) => {
     try {
-        const keyword = req.query.keyword || "";
+        const searchTerms = tokenizeJobSearch(req.query.keyword);
+        const matchingCompanies = searchTerms.length
+            ? await Company.find({
+                $or: searchTerms.map((term) => ({
+                    name: { $regex: escapeRegex(term), $options: "i" },
+                })),
+            }).select("_id name").lean()
+            : [];
         const query = {
-            $or: [
-                { title: { $regex: keyword, $options: "i" } },
-                { description: { $regex: keyword, $options: "i" } },
-            ],
-            isArchived: { $ne: true }
+            ...buildJobSearchFilter(searchTerms, matchingCompanies),
+            isArchived: { $ne: true },
         };
         const jobs = await Job.find(query).populate({
             path: "company"
@@ -209,6 +234,9 @@ export const getAllJobs = async (req, res) => {
 export const getJobById = async (req, res) => {
     try {
         const jobId = req.params.id;
+        if (!mongoose.isValidObjectId(jobId)) {
+            return res.status(400).json({ message: "Please provide a valid job id.", success: false });
+        }
         const job = await Job.findOne({ _id: jobId, isArchived: { $ne: true } })
             .populate({ path: "company" })
             .populate({ path: "applications" });
