@@ -3,6 +3,7 @@ import { Job } from "../models/job.model.js";
 import { Company } from "../models/company.model.js";
 import { User } from "../models/user.model.js";
 import { buildJobSearchFilter, escapeRegex, tokenizeJobSearch } from "../utils/jobSearch.js";
+import { buildOpenJobsFilter, parseApplicationDeadline } from "../utils/applicationPolicy.js";
 
 const parseList = (value) => {
     const values = Array.isArray(value) ? value : String(value || "").split(",");
@@ -34,8 +35,8 @@ export const postJob = async (req, res) => {
         if (!mongoose.isValidObjectId(companyId)) {
             return res.status(400).json({ message: "Please select a valid company.", success: false });
         }
-        const parsedDeadline = applicationDeadline ? new Date(applicationDeadline) : undefined;
-        if (applicationDeadline && Number.isNaN(parsedDeadline.getTime())) {
+        const parsedDeadline = parseApplicationDeadline(applicationDeadline);
+        if (applicationDeadline && !parsedDeadline) {
             return res.status(400).json({
                 message: "Please provide a valid application deadline.",
                 success: false
@@ -93,8 +94,8 @@ export const updateJob = async (req, res) => {
         if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(companyId)) {
             return res.status(400).json({ message: "Please provide a valid job and company.", success: false });
         }
-        const parsedDeadline = applicationDeadline ? new Date(applicationDeadline) : null;
-        if (applicationDeadline && Number.isNaN(parsedDeadline.getTime())) {
+        const parsedDeadline = parseApplicationDeadline(applicationDeadline);
+        if (applicationDeadline && !parsedDeadline) {
             return res.status(400).json({
                 message: "Please provide a valid application deadline.",
                 success: false
@@ -119,7 +120,7 @@ export const updateJob = async (req, res) => {
         job.experienceLevel = String(experience).trim();
         job.workMode = String(workMode || "").trim();
         job.benefits = String(benefits || "").split(",").map((benefit) => benefit.trim()).filter(Boolean);
-        job.applicationDeadline = parsedDeadline;
+        job.applicationDeadline = parsedDeadline || null;
         job.position = parsedPosition;
         job.company = companyId;
         await job.save();
@@ -207,10 +208,11 @@ export const getAllJobs = async (req, res) => {
             : [];
         const query = {
             ...buildJobSearchFilter(searchTerms, matchingCompanies),
-            isArchived: { $ne: true },
+            ...buildOpenJobsFilter(),
         };
-        const jobs = await Job.find(query).populate({
-            path: "company"
+        const jobs = await Job.find(query).select("-created_by -applications").populate({
+            path: "company",
+            select: "name logo description website location industry companySize founded companyType specializations"
         }).sort({ createdAt: -1 });
         if (!jobs) {
             return res.status(404).json({
@@ -237,16 +239,22 @@ export const getJobById = async (req, res) => {
         if (!mongoose.isValidObjectId(jobId)) {
             return res.status(400).json({ message: "Please provide a valid job id.", success: false });
         }
-        const job = await Job.findOne({ _id: jobId, isArchived: { $ne: true } })
-            .populate({ path: "company" })
-            .populate({ path: "applications" });
+        const job = await Job.findOne({ _id: jobId, ...buildOpenJobsFilter() })
+            .select("-created_by")
+            .populate({
+                path: "company",
+                select: "name logo description website location industry companySize founded companyType specializations"
+            });
         if (!job) {
             return res.status(404).json({
                 message: "Jobs not found.",
                 success: false
             })
         };
-        return res.status(200).json({ job, success: true });
+        const jobDetails = job.toObject();
+        jobDetails.applicationCount = job.applications.length;
+        delete jobDetails.applications;
+        return res.status(200).json({ job: jobDetails, success: true });
     } catch (error) {
         console.log(error);
         return res.status(500).json({

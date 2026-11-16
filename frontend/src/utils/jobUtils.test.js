@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatSalary, getJobSearchSuggestions, getMinimumAnnualSalary, matchesJobSearch, matchesWorkMode, sortJobs } from './jobUtils.js';
+import { formatSalary, getJobSearchSuggestions, getMinimumAnnualSalary, matchesJobSearch, matchesMinimumExperience, matchesWorkMode, sortJobs } from './jobUtils.js';
 
 describe('job display and filter helpers', () => {
     it('matches job searches across title, location, and company', () => {
@@ -40,6 +40,14 @@ describe('job display and filter helpers', () => {
     it('uses location fields for older jobs without a work mode', () => {
         assert.equal(matchesWorkMode({ location: 'Temporarily Remote' }, 'temporarily remote'), true);
         assert.equal(matchesWorkMode({ location: 'Mumbai', description: 'Remote collaboration' }, 'remote'), false);
+    });
+
+    it('matches experience filters against the upper end of experience ranges', () => {
+        assert.equal(matchesMinimumExperience('0-2', 1), true);
+        assert.equal(matchesMinimumExperience('0–2 years', 2), true);
+        assert.equal(matchesMinimumExperience('0-2', 3), false);
+        assert.equal(matchesMinimumExperience('3', 3), true);
+        assert.equal(matchesMinimumExperience('not specified', 0), false);
     });
 
     it('formats salary values without repeating the currency or pay unit', () => {

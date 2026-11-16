@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Application } from "../models/application.model.js";
 import { Job } from "../models/job.model.js";
 import { User } from "../models/user.model.js";
-import { isWithinWithdrawalWindow, WITHDRAWAL_WINDOW_MS } from "../utils/applicationPolicy.js";
+import { isApplicationDeadlineOpen, isWithinWithdrawalWindow, WITHDRAWAL_WINDOW_MS } from "../utils/applicationPolicy.js";
 
 export const applyJob = async (req, res) => {
     try {
@@ -12,12 +12,9 @@ export const applyJob = async (req, res) => {
             return res.status(403).json({ message: "Student access required.", success: false });
         }
         const jobId = req.params.id;
-        if (!jobId) {
-            return res.status(400).json({
-                message: "Job id is required.",
-                success: false
-            })
-        };
+        if (!mongoose.isValidObjectId(jobId)) {
+            return res.status(400).json({ message: "Please provide a valid job id.", success: false });
+        }
         // check if the user has already applied for the job
         const existingApplication = await Application.findOne({ job: jobId, applicant: userId });
 
@@ -38,7 +35,7 @@ export const applyJob = async (req, res) => {
                 success: false
             })
         }
-        if (job.isArchived) {
+        if (job.isArchived || !isApplicationDeadlineOpen(job.applicationDeadline)) {
             return res.status(410).json({ message: "This job is no longer accepting applications.", success: false });
         }
         // create a new application
@@ -59,6 +56,27 @@ export const applyJob = async (req, res) => {
             message: "Something went wrong while applying for the job.",
             success: false
         });
+    }
+};
+
+export const checkJobApplication = async (req, res) => {
+    try {
+        const user = await User.findById(req.id).select("role");
+        if (!user || user.role !== "student") {
+            return res.status(403).json({ message: "Student access required.", success: false });
+        }
+        if (!mongoose.isValidObjectId(req.params.jobId)) {
+            return res.status(400).json({ message: "Please provide a valid job id.", success: false });
+        }
+
+        const application = await Application.exists({
+            job: req.params.jobId,
+            applicant: req.id,
+        });
+        return res.status(200).json({ hasApplied: Boolean(application), success: true });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Something went wrong while checking your application.", success: false });
     }
 };
 
@@ -116,9 +134,11 @@ export const getAppliedJobs = async (req,res) => {
         const userId = req.id;
         const applications = await Application.find({applicant:userId}).sort({createdAt:-1}).populate({
             path:'job',
+            select:'title description requirements salary location jobType experienceLevel workMode benefits applicationDeadline position company',
             options:{sort:{createdAt:-1}},
             populate:{
                 path:'company',
+                select:'name logo',
                 options:{sort:{createdAt:-1}},
             }
         });
@@ -146,13 +166,10 @@ export const getApplicants = async (req,res) => {
         if (!recruiter || recruiter.role !== "recruiter") {
             return res.status(403).json({ message: "Recruiter access required.", success: false });
         }
-        const job = await Job.findById(jobId).populate({
-            path:'applications',
-            options:{sort:{createdAt:-1}},
-            populate:{
-                path:'applicant'
-            }
-        });
+        if (!mongoose.isValidObjectId(jobId)) {
+            return res.status(400).json({ message: "Please provide a valid job id.", success: false });
+        }
+        const job = await Job.findById(jobId);
         if(!job){
             return res.status(404).json({
                 message:'Job not found.',
@@ -162,6 +179,14 @@ export const getApplicants = async (req,res) => {
         if (String(job.created_by) !== String(req.id)) {
             return res.status(403).json({ message: "You can only view applicants for your own jobs.", success: false });
         }
+        await job.populate({
+            path:'applications',
+            options:{sort:{createdAt:-1}},
+            populate:{
+                path:'applicant',
+                select:'fullname email phoneNumber profile.resume profile.resumeOriginalName'
+            }
+        });
         return res.status(200).json({
             job,
             success:true

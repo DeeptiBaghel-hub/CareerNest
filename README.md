@@ -66,8 +66,10 @@ Base path: `/api/v1`
 | Job | `/job/get` | GET | Yes | List/search jobs |
 | Job | `/job/getAdminJobs` | GET | Yes | Jobs posted by the current recruiter |
 | Job | `/job/get/:id` | GET | Yes | Get a job by ID |
-| Application | `/application/apply/:id` | GET | Yes | Apply to a job |
+| Application | `/application/apply/:id` | POST | Yes | Apply to a job |
+| Application | `/application/withdraw/:id` | POST | Yes | Withdraw a pending application within 24 hours |
 | Application | `/application/get` | GET | Yes | Get the current user's applications |
+| Application | `/application/check/:jobId` | GET | Yes | Check whether the current student has applied |
 | Application | `/application/:id/applicants` | GET | Yes | Get applicants for a job |
 | Application | `/application/status/:id/update` | POST | Yes | Update an applicant's status |
 

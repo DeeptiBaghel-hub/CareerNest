@@ -60,15 +60,13 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
             if (res.data.success) {
                 dispatch(setUser(res.data.user));
                 toast.success(res.data.message);
+                setOpen(false);
             }
         } catch (error) {
-            console.log(error);
             toast.error(error.response?.data?.message || "Unable to update profile.");
         } finally{
             setLoading(false);
         }
-        setOpen(false);
-        console.log(input);
     }
 
 
