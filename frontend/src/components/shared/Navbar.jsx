@@ -51,6 +51,7 @@ const Navbar = () => {
                         <ul className='flex items-center gap-8 text-sm font-medium text-muted-foreground'>
                             {user?.role === 'recruiter' ? (
                                 <>
+                                    <li><Link className="transition-colors hover:text-primary" to="/admin/dashboard">Dashboard</Link></li>
                                     <li><Link className="transition-colors hover:text-primary" to="/admin/companies">Companies</Link></li>
                                     <li><Link className="transition-colors hover:text-primary" to="/admin/jobs">Jobs</Link></li>
                                 </>
@@ -122,7 +123,7 @@ const Navbar = () => {
             {menuOpen && <nav className="border-t border-border bg-background px-4 py-3 md:hidden">
                 <ul className="mx-auto flex max-w-7xl flex-col gap-1">
                     {(user?.role === "recruiter"
-                        ? [["Companies", "/admin/companies"], ["Jobs", "/admin/jobs"]]
+                        ? [["Dashboard", "/admin/dashboard"], ["Companies", "/admin/companies"], ["Jobs", "/admin/jobs"]]
                         : [["Home", "/"], ["Jobs", "/jobs"], ["Browse", "/browse"], ...(user ? [["Saved", "/saved"]] : [])]
                     ).map(([label, path]) => <li key={path}>
                         <Link to={path} onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-primary">{label}</Link>
