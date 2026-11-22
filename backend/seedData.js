@@ -64,6 +64,42 @@ const recruiters = [
       profilePhoto: "",
     },
   },
+  {
+    fullname: "Kalyan Krishnamurthy",
+    email: "recruiter@flipkart.com",
+    phoneNumber: 9876543213,
+    password: COMMON_PASSWORD,
+    role: "recruiter",
+    profile: {
+      bio: "Head of Talent Acquisition at Flipkart",
+      skills: [],
+      profilePhoto: "",
+    },
+  },
+  {
+    fullname: "Salil Parekh",
+    email: "recruiter@infosys.com",
+    phoneNumber: 9876543214,
+    password: COMMON_PASSWORD,
+    role: "recruiter",
+    profile: {
+      bio: "Talent Lead at Infosys",
+      skills: [],
+      profilePhoto: "",
+    },
+  },
+  {
+    fullname: "Harshil Mathur",
+    email: "recruiter@razorpay.com",
+    phoneNumber: 9876543215,
+    password: COMMON_PASSWORD,
+    role: "recruiter",
+    profile: {
+      bio: "People Ops at Razorpay",
+      skills: [],
+      profilePhoto: "",
+    },
+  },
 ];
 
 // ─── Companies ──────────────────────────────────────────────
@@ -122,7 +158,7 @@ const companiesData = [
     companyType: "Private",
     specializations: ["E-commerce", "Supply Chain", "Fintech", "Ads Platform"],
     logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><rect width='48' height='48' rx='10' fill='%232874F0'/><path d='M15 11h11a6 6 0 0 1 6 6v1h-5v-1a2 2 0 0 0-2-2H15v20h-4V11h4z' fill='%23FFE500'/><path d='M15 20h12v4H15v-4z' fill='%23FFE500'/></svg>",
-    _recruiterEmail: "recruiter@google.com", // same recruiter manages multiple companies
+    _recruiterEmail: "recruiter@flipkart.com",
   },
   {
     name: "Infosys",
@@ -136,7 +172,7 @@ const companiesData = [
     companyType: "Public",
     specializations: ["IT Consulting", "Digital Transformation", "Cloud", "SAP", "Data Analytics"],
     logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><rect width='48' height='48' rx='10' fill='%23007CC3'/><text x='24' y='29' font-family='Arial, sans-serif' font-weight='bold' font-size='13' text-anchor='middle' fill='white'>infosys</text></svg>",
-    _recruiterEmail: "recruiter@microsoft.com",
+    _recruiterEmail: "recruiter@infosys.com",
   },
   {
     name: "Razorpay",
@@ -150,7 +186,7 @@ const companiesData = [
     companyType: "Private",
     specializations: ["Payments", "Fintech", "Banking", "APIs"],
     logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><rect width='48' height='48' rx='10' fill='%230C2340'/><path d='M18 34l7-18h6l-4.5 11h6.5l-11 13 2-6h-6z' fill='%2300BAF2'/></svg>",
-    _recruiterEmail: "recruiter@amazon.com",
+    _recruiterEmail: "recruiter@razorpay.com",
   },
 ];
 
