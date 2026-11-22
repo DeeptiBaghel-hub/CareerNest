@@ -75,10 +75,13 @@ const Job = ({job, onSavedChange}) => {
                 <Badge className="rounded-full bg-accent px-2.5 py-1 font-semibold text-accent-foreground" variant="ghost">{job?.jobType}</Badge>
                 <Badge className="rounded-full bg-muted px-2.5 py-1 font-semibold text-foreground" variant="ghost">{formatSalary(job?.salary)}</Badge>
             </div>
-            <div className='mt-auto flex items-center gap-3 pt-5'>
-                <Button type="button" onClick={() => setQuickViewOpen(true)} variant="outline"><Eye className="mr-1 size-4" />Quick view</Button>
-                <Button onClick={()=> navigate(`/description/${job?._id}`)} variant="outline">Details</Button>
-                <Button type="button" variant={isSaved ? "secondary" : "default"} onClick={toggleSaved}>{isSaved ? "Saved" : "Save For Later"}</Button>
+            <div className='mt-auto flex items-center gap-2 pt-5'>
+                <Button type="button" onClick={() => setQuickViewOpen(true)} variant="outline" size="sm" className="flex-1 text-xs">
+                    <Eye className="mr-1.5 size-3.5" /> Quick view
+                </Button>
+                <Button onClick={()=> navigate(`/description/${job?._id}`)} size="sm" className="flex-1 text-xs">
+                    View details
+                </Button>
             </div>
             <Dialog open={quickViewOpen} onOpenChange={setQuickViewOpen}>
                 <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
