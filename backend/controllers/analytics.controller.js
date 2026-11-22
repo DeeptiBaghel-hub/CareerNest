@@ -115,11 +115,13 @@ export const getRecruiterAnalytics = async (req, res) => {
             companyMap.set(c._id.toString(), { companyName: c.name, jobCount: 0, applicationCount: 0 });
         }
         for (const j of jobs) {
-            const key = j.company.toString();
-            const entry = companyMap.get(key);
-            if (entry) {
-                entry.jobCount += 1;
-                entry.applicationCount += j.applications ? j.applications.length : 0;
+            const key = j.company ? j.company.toString() : null;
+            if (key) {
+                const entry = companyMap.get(key);
+                if (entry) {
+                    entry.jobCount += 1;
+                    entry.applicationCount += j.applications ? j.applications.length : 0;
+                }
             }
         }
         const jobsPerCompany = Array.from(companyMap.values());
@@ -177,6 +179,7 @@ export const getRecruiterAnalytics = async (req, res) => {
                 applicationsByStatus,
                 recentApplications: formattedRecentApplications,
                 topJobs: topJobs.map((j) => ({
+                    id: j._id,
                     title: j.title,
                     companyName: j.companyName || "",
                     applicationCount: j.applicationCount,

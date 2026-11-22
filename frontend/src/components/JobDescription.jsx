@@ -8,7 +8,7 @@ import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant';
 import { setSingleJob } from '@/redux/jobSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import { BriefcaseBusiness, CalendarDays, MapPin, Users, Sparkles, CheckCircle2, BookOpen } from 'lucide-react';
+import { BriefcaseBusiness, CalendarDays, MapPin, Users, Sparkles } from 'lucide-react';
 import { formatSalary } from '@/utils/jobUtils';
 
 const getSafeWebsiteUrl = (value) => {

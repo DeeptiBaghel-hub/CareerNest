@@ -117,7 +117,7 @@ const AdminDashboard = () => {
     const [year, month] = monthStr.split("-");
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const idx = parseInt(month, 10) - 1;
-    return `${monthNames[idx] || month} '${year.slice(2)}`;
+    return `${monthNames[idx] || month} '${(year || "").slice(2)}`;
   };
 
   const getStatusBadge = (status) => {
@@ -455,20 +455,26 @@ const AdminDashboard = () => {
                 ) : (
                   <div className="divide-y divide-border/60">
                     {data.topJobs.map((j, i) => (
-                      <div key={i} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                      <Link
+                        key={i}
+                        to={j.id ? `/admin/jobs/${j.id}/applicants` : "/admin/jobs"}
+                        className="flex items-center justify-between py-3 first:pt-0 last:pb-0 transition-colors hover:bg-muted/30 rounded-xl px-2 -mx-2 group"
+                      >
                         <div className="flex items-center gap-3">
-                          <div className="flex size-7 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                          <div className="flex size-7 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary">
                             #{i + 1}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold">{j.title}</p>
+                            <p className="text-sm font-semibold group-hover:text-primary flex items-center gap-1">
+                              {j.title} <ArrowUpRight className="size-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </p>
                             <p className="text-xs text-muted-foreground">{j.companyName}</p>
                           </div>
                         </div>
                         <Badge variant="secondary" className="font-semibold text-xs rounded-full">
                           {j.applicationCount} applicants
                         </Badge>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 )}

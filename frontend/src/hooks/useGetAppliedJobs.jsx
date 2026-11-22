@@ -24,6 +24,6 @@ const useGetAppliedJobs = (enabled = true) => {
             }
         }
         fetchAppliedJobs();
-    },[enabled])
+    },[enabled, dispatch])
 };
 export default useGetAppliedJobs;
