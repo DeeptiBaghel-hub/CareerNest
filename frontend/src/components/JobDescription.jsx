@@ -8,7 +8,7 @@ import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant';
 import { setSingleJob } from '@/redux/jobSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import { BriefcaseBusiness, CalendarDays, MapPin, Users } from 'lucide-react';
+import { BriefcaseBusiness, CalendarDays, MapPin, Users, Sparkles, CheckCircle2, BookOpen } from 'lucide-react';
 import { formatSalary } from '@/utils/jobUtils';
 
 const getSafeWebsiteUrl = (value) => {
@@ -40,6 +40,29 @@ const JobDescription = () => {
         company.website ||
         company.specializations?.length
     );
+
+    const userSkills = (user?.profile?.skills || []).map(s => String(s).toLowerCase().trim());
+    const jobSkills = currentJob?.requirements || [];
+    const matchedSkills = [];
+    const missingSkills = [];
+
+    if (userSkills.length > 0 && jobSkills.length > 0) {
+        jobSkills.forEach(req => {
+            const reqLower = String(req).toLowerCase().trim();
+            const hasMatch = userSkills.some(skill =>
+                skill.includes(reqLower) || reqLower.includes(skill)
+            );
+            if (hasMatch) {
+                matchedSkills.push(req);
+            } else {
+                missingSkills.push(req);
+            }
+        });
+    }
+
+    const matchPercent = jobSkills.length > 0
+        ? Math.round((matchedSkills.length / jobSkills.length) * 100)
+        : 0;
     const [applicationStatus, setApplicationStatus] = useState(null);
     const [isApplying, setIsApplying] = useState(false);
     const hasCurrentApplicationStatus = applicationStatus?.jobId === jobId && applicationStatus?.userId === user?._id;
@@ -135,6 +158,42 @@ const JobDescription = () => {
                     <div className="space-y-6 border-t border-border pt-7">
                         <div><h2 className="text-lg font-semibold">About the role</h2><p className="mt-3 whitespace-pre-line leading-7 text-muted-foreground">{currentJob?.description}</p></div>
                         {currentJob?.requirements?.length > 0 && <div><h2 className="text-lg font-semibold">What you’ll need</h2><ul className="mt-3 grid gap-2 text-muted-foreground sm:grid-cols-2">{currentJob.requirements.map((requirement, index) => <li key={`${requirement}-${index}`} className="flex gap-2"><span className="text-primary">•</span>{requirement}</li>)}</ul></div>}
+                        {user?.role === "student" && userSkills.length > 0 && jobSkills.length > 0 && (
+                            <div className="rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/5 via-card to-background p-5 shadow-sm">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="rounded-xl bg-primary/10 p-2 text-primary">
+                                            <Sparkles className="size-4" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-sm sm:text-base">Profile Skill Match</h3>
+                                            <p className="text-xs text-muted-foreground">Based on skills listed in your profile</p>
+                                        </div>
+                                    </div>
+                                    <span className={`text-base font-bold px-3 py-1 rounded-full border ${matchPercent >= 60 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"}`}>
+                                        {matchPercent}% Match
+                                    </span>
+                                </div>
+                                <div className="mt-3.5 h-2 w-full overflow-hidden rounded-full bg-muted">
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-700 ease-out ${matchPercent >= 60 ? "bg-emerald-500" : "bg-amber-500"}`}
+                                        style={{ width: `${matchPercent}%` }}
+                                    />
+                                </div>
+                                <div className="mt-4 flex flex-wrap items-center gap-1.5 pt-1">
+                                    {matchedSkills.map((s, i) => (
+                                        <Badge key={`match-${i}`} className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-xs py-0.5">
+                                            ✓ {s}
+                                        </Badge>
+                                    ))}
+                                    {missingSkills.map((s, i) => (
+                                        <Badge key={`miss-${i}`} variant="outline" className="text-xs text-muted-foreground opacity-80 py-0.5 border-dashed">
+                                            + {s}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {currentJob?.benefits?.length > 0 && <div><h2 className="text-lg font-semibold">Benefits</h2><ul className="mt-3 grid gap-2 text-muted-foreground sm:grid-cols-2">{currentJob.benefits.map((benefit, index) => <li key={`${benefit}-${index}`} className="flex gap-2"><span className="text-primary">•</span>{benefit}</li>)}</ul></div>}
                         {hasCompanyDetails && <section className="space-y-4 rounded-2xl bg-secondary/40 p-5">
                             <h2 className="text-lg font-semibold">About {company.name}</h2>
