@@ -42,6 +42,13 @@ export const matchesWorkMode = (job, filter) => {
     return [job?.jobType, job?.location].some(value => matchesModeValue(value, selectedMode));
 };
 
+export const matchesMinimumExperience = (experience, minimumYears) => {
+    const values = String(experience || '').match(/\d+(?:\.\d+)?/g)?.map(Number) || [];
+    if (!values.length) return false;
+
+    return Math.max(...values) >= Number(minimumYears);
+};
+
 export const getMinimumAnnualSalary = (value) => {
     const raw = String(value || '').replace(/,/g, '');
     const values = raw.match(/\d+(?:\.\d+)?/g)?.map(Number) || [];
