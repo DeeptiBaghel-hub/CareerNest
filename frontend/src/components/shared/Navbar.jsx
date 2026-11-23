@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Button } from '../ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
-import { BookmarkCheck, LogOut, Menu, Moon, Sun, User2, X } from 'lucide-react'
+import { BookmarkCheck, LogOut, Menu, Moon, Sun, User2, X, LayoutDashboard } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -58,6 +58,7 @@ const Navbar = () => {
                             ) : (
                                 <>
                                     <li><Link className="transition-colors hover:text-primary" to="/">Home</Link></li>
+                                    {user?.role === 'student' && <li><Link className="transition-colors hover:text-primary" to="/dashboard">Dashboard</Link></li>}
                                     <li><Link className="transition-colors hover:text-primary" to="/jobs">Jobs</Link></li>
                                     <li><Link className="transition-colors hover:text-primary" to="/browse">Browse</Link></li>
                                     {user && <li><Link to="/saved" className="inline-flex items-center gap-1.5 transition-colors hover:text-primary"><BookmarkCheck className="size-4" />Saved</Link></li>}
@@ -88,6 +89,18 @@ const Navbar = () => {
                                         </div>
                                     </div>
                                     <div className='flex flex-col my-2 text-muted-foreground'>
+                                        {user?.role === 'student' && (
+                                            <div className='flex items-center gap-2'>
+                                                <LayoutDashboard className="size-4" />
+                                                <Button variant="link"><Link to="/dashboard">Dashboard</Link></Button>
+                                            </div>
+                                        )}
+                                        {user?.role === 'recruiter' && (
+                                            <div className='flex items-center gap-2'>
+                                                <LayoutDashboard className="size-4" />
+                                                <Button variant="link"><Link to="/admin/dashboard">Dashboard</Link></Button>
+                                            </div>
+                                        )}
                                         <div className='flex items-center gap-2'>
                                             <User2 />
                                             <Button variant="link"><Link to="/profile">View Profile</Link></Button>
@@ -124,7 +137,13 @@ const Navbar = () => {
                 <ul className="mx-auto flex max-w-7xl flex-col gap-1">
                     {(user?.role === "recruiter"
                         ? [["Dashboard", "/admin/dashboard"], ["Companies", "/admin/companies"], ["Jobs", "/admin/jobs"]]
-                        : [["Home", "/"], ["Jobs", "/jobs"], ["Browse", "/browse"], ...(user ? [["Saved", "/saved"]] : [])]
+                        : [
+                            ["Home", "/"],
+                            ...(user?.role === "student" ? [["Dashboard", "/dashboard"]] : []),
+                            ["Jobs", "/jobs"],
+                            ["Browse", "/browse"],
+                            ...(user ? [["Saved", "/saved"], ["Profile", "/profile"]] : [])
+                          ]
                     ).map(([label, path]) => <li key={path}>
                         <Link to={path} onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-primary">{label}</Link>
                     </li>)}

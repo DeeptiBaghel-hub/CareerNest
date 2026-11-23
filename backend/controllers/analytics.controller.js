@@ -191,3 +191,117 @@ export const getRecruiterAnalytics = async (req, res) => {
         return res.status(500).json({ message: "Internal server error", success: false });
     }
 };
+
+export const getStudentAnalytics = async (req, res) => {
+    try {
+        const userId = req.id;
+        const user = await User.findById(userId).select("role fullname email phoneNumber profile");
+        if (!user || user.role !== "student") {
+            return res.status(403).json({ message: "Student role required.", success: false });
+        }
+
+        const studentObjectId = new mongoose.Types.ObjectId(userId);
+
+        // Fetch student's applications
+        const applications = await Application.find({ applicant: studentObjectId })
+            .populate({
+                path: "job",
+                select: "title salary location jobType workMode company requirements position createdAt isArchived applicationDeadline",
+                populate: {
+                    path: "company",
+                    select: "name logo location"
+                }
+            })
+            .sort({ createdAt: -1 });
+
+        const statusCounts = { pending: 0, accepted: 0, rejected: 0, withdrawn: 0 };
+        applications.forEach(app => {
+            const st = (app.status || "pending").toLowerCase();
+            if (statusCounts[st] !== undefined) statusCounts[st] += 1;
+        });
+
+        const totalApplications = applications.length;
+
+        // Profile completion score
+        const checks = [
+            Boolean(user.fullname),
+            Boolean(user.email),
+            Boolean(user.phoneNumber),
+            Boolean(user.profile?.bio),
+            Boolean(user.profile?.resume),
+            Boolean(user.profile?.skills && user.profile.skills.length > 0),
+        ];
+        const profileCompletion = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+
+        // Applications in last 6 months
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const now = new Date();
+        const monthlyStats = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const year = d.getFullYear();
+            const month = d.getMonth();
+            const key = `${year}-${String(month + 1).padStart(2, "0")}`;
+            monthlyStats.push({
+                key,
+                month: monthNames[month],
+                count: 0
+            });
+        }
+
+        applications.forEach(app => {
+            const d = new Date(app.createdAt);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+            const target = monthlyStats.find(m => m.key === key);
+            if (target) target.count += 1;
+        });
+
+        // Top recommended jobs matching candidate skills
+        const candidateSkills = (user.profile?.skills || []).map(s => String(s).toLowerCase().trim());
+        const appliedJobIds = new Set(applications.map(a => a.job?._id?.toString()).filter(Boolean));
+
+        const openJobs = await Job.find({ isArchived: false })
+            .populate("company", "name logo location")
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const recommendedJobs = openJobs
+            .filter(j => !appliedJobIds.has(j._id.toString()))
+            .map(j => {
+                const requirements = (j.requirements || []).map(r => String(r).toLowerCase().trim());
+                let matches = 0;
+                requirements.forEach(req => {
+                    if (candidateSkills.some(skill => skill.includes(req) || req.includes(skill))) {
+                        matches++;
+                    }
+                });
+                const matchScore = requirements.length > 0 ? Math.round((matches / requirements.length) * 100) : 50;
+                return {
+                    ...j,
+                    matchScore
+                };
+            })
+            .sort((a, b) => b.matchScore - a.matchScore)
+            .slice(0, 6);
+
+        return res.status(200).json({
+            success: true,
+            analytics: {
+                overview: {
+                    totalApplications,
+                    pendingApplications: statusCounts.pending,
+                    acceptedApplications: statusCounts.accepted,
+                    rejectedApplications: statusCounts.rejected,
+                    withdrawnApplications: statusCounts.withdrawn,
+                    profileCompletion
+                },
+                applicationsPerMonth: monthlyStats,
+                recommendedJobs,
+                recentApplications: applications.slice(0, 5)
+            }
+        });
+    } catch (error) {
+        console.error("Student analytics error:", error);
+        return res.status(500).json({ message: "Internal server error", success: false });
+    }
+};
